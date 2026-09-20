@@ -315,3 +315,27 @@ button:disabled {
     flex-wrap: wrap;
   }
 }
+
+.account-identity {
+  display: flex;
+  gap: 12px;
+  align-items: center;
+}
+
+.account-avatar {
+  flex: 0 0 auto;
+  width: 48px;
+  height: 48px;
+  border-radius: 50%;
+  object-fit: cover;
+  border: 1px solid rgba(148, 163, 184, .24);
+  background: #111827;
+}
+
+.account-avatar.placeholder {
+  display: grid;
+  place-items: center;
+  color: #93c5fd;
+  font-size: 12px;
+  font-weight: 800;
+}

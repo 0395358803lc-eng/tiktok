@@ -4,9 +4,14 @@ import httpx
 
 TOKEN_URL = "https://open.tiktokapis.com/v2/oauth/token/"
 REVOKE_URL = "https://open.tiktokapis.com/v2/oauth/revoke/"
+USER_INFO_URL = "https://open.tiktokapis.com/v2/user/info/"
 
 
 class TikTokOAuthError(RuntimeError):
+    pass
+
+
+class TikTokAPIError(RuntimeError):
     pass
 
 
@@ -19,6 +24,14 @@ class TokenResponse:
     refresh_expires_in: int
     scope: str
     token_type: str
+
+
+@dataclass(slots=True)
+class UserInfoResponse:
+    open_id: str
+    union_id: str | None
+    display_name: str | None
+    avatar_url: str | None
 
 
 def _parse_token_response(response: httpx.Response) -> TokenResponse:
@@ -102,3 +115,34 @@ def revoke_access(*, client_key: str, client_secret: str, access_token: str) -> 
         except ValueError:
             message = None
         raise TikTokOAuthError(str(message or "TikTok revoke request failed"))
+
+
+def get_user_info(*, access_token: str) -> UserInfoResponse:
+    response = httpx.get(
+        USER_INFO_URL,
+        params={"fields": "open_id,union_id,avatar_url,display_name"},
+        headers={"Authorization": f"Bearer {access_token}"},
+        timeout=15,
+    )
+    try:
+        payload = response.json()
+    except ValueError as exc:
+        raise TikTokAPIError("TikTok returned a non-JSON user-info response") from exc
+
+    error = payload.get("error") or {}
+    error_code = error.get("code")
+    if response.is_error or error_code not in (None, 0, "ok"):
+        message = error.get("message") or "TikTok user-info request failed"
+        raise TikTokAPIError(str(message))
+
+    user = (payload.get("data") or {}).get("user") or {}
+    open_id = user.get("open_id")
+    if not open_id:
+        raise TikTokAPIError("TikTok user-info response is missing open_id")
+
+    return UserInfoResponse(
+        open_id=str(open_id),
+        union_id=str(user["union_id"]) if user.get("union_id") else None,
+        display_name=str(user["display_name"]) if user.get("display_name") else None,
+        avatar_url=str(user["avatar_url"]) if user.get("avatar_url") else None,
+    )

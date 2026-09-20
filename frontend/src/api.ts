@@ -17,11 +17,15 @@ export type TikTokConfigStatus = {
 export type TikTokAccount = {
   id: number;
   open_id: string;
+  union_id?: string | null;
+  display_name?: string | null;
+  avatar_url?: string | null;
   scopes: string[];
   status: string;
   access_token_expires_at: string;
   refresh_token_expires_at: string;
   last_token_refresh_at?: string | null;
+  profile_synced_at?: string | null;
 };
 
 type OAuthStart = { authorize_url: string };
@@ -57,6 +61,8 @@ export const api = {
     json<OAuthStart>("/api/tiktok/oauth/start", { method: "POST" }),
   refreshTikTokAccount: (id: number) =>
     json<TikTokAccount>(`/api/tiktok/accounts/${id}/refresh`, { method: "POST" }),
+  syncTikTokProfile: (id: number) =>
+    json<TikTokAccount>(`/api/tiktok/accounts/${id}/sync-profile`, { method: "POST" }),
   disconnectTikTokAccount: (id: number) =>
     json<TikTokAccount>(`/api/tiktok/accounts/${id}/disconnect`, { method: "POST" }),
 };

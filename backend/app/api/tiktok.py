@@ -14,12 +14,14 @@ from app.models.oauth_session import OAuthSession
 from app.models.tiktok_account import TikTokAccount
 from app.schemas.tiktok import OAuthStartResponse, TikTokAccountSummary, TikTokConfigStatus
 from app.services.tiktok.client import (
+    TikTokAPIError,
     TikTokOAuthError,
     exchange_code,
     revoke_access,
 )
 from app.services.tiktok.crypto import decrypt_token, encrypt_token
 from app.services.tiktok.oauth import build_authorize_url, new_state, oauth_configured, state_digest
+from app.services.tiktok.profile import TikTokProfileIdentityError, sync_account_profile
 from app.services.tiktok.tokens import (
     TikTokConfigurationError,
     TikTokIdentityError,
@@ -32,6 +34,22 @@ Admin = Annotated[AdminSession, Depends(require_admin)]
 
 def _scope_list(raw: str) -> list[str]:
     return [scope for scope in (item.strip() for item in raw.split(",")) if scope]
+
+
+def _account_summary(account: TikTokAccount) -> TikTokAccountSummary:
+    return TikTokAccountSummary(
+        id=account.id,
+        open_id=account.open_id,
+        union_id=account.union_id,
+        display_name=account.display_name,
+        avatar_url=account.avatar_url,
+        scopes=_scope_list(account.scopes),
+        status=account.status,
+        access_token_expires_at=account.access_token_expires_at,
+        refresh_token_expires_at=account.refresh_token_expires_at,
+        last_token_refresh_at=account.last_token_refresh_at,
+        profile_synced_at=account.profile_synced_at,
+    )
 
 
 def _frontend_redirect(kind: str, message: str | None = None) -> RedirectResponse:
@@ -158,18 +176,7 @@ def oauth_callback(
 @router.get("/accounts", response_model=list[TikTokAccountSummary])
 def list_accounts(_: Admin, db: DbSession):
     rows = db.scalars(select(TikTokAccount).order_by(TikTokAccount.id.desc())).all()
-    return [
-        TikTokAccountSummary(
-            id=row.id,
-            open_id=row.open_id,
-            scopes=_scope_list(row.scopes),
-            status=row.status,
-            access_token_expires_at=row.access_token_expires_at,
-            refresh_token_expires_at=row.refresh_token_expires_at,
-            last_token_refresh_at=row.last_token_refresh_at,
-        )
-        for row in rows
-    ]
+    return [_account_summary(row) for row in rows]
 
 
 def _client_credentials() -> tuple[str, str]:
@@ -212,15 +219,32 @@ def refresh_account(account_id: int, _: Admin, db: DbSession):
         db.commit()
         raise HTTPException(status_code=502, detail="TikTok token endpoint unavailable") from exc
 
-    return TikTokAccountSummary(
-        id=account.id,
-        open_id=account.open_id,
-        scopes=_scope_list(account.scopes),
-        status=account.status,
-        access_token_expires_at=account.access_token_expires_at,
-        refresh_token_expires_at=account.refresh_token_expires_at,
-        last_token_refresh_at=account.last_token_refresh_at,
-    )
+    return _account_summary(account)
+
+
+
+
+@router.post("/accounts/{account_id}/sync-profile", response_model=TikTokAccountSummary)
+def sync_profile(account_id: int, _: Admin, db: DbSession):
+    account = db.get(TikTokAccount, account_id)
+    if account is None:
+        raise HTTPException(status_code=404, detail="TikTok account not found")
+    if account.status == "REVOKED":
+        raise HTTPException(status_code=409, detail="TikTok account is revoked")
+
+    try:
+        sync_account_profile(db, account)
+    except TikTokProfileIdentityError as exc:
+        account.status = "ERROR"
+        account.updated_at = datetime.now(UTC)
+        db.commit()
+        raise HTTPException(status_code=409, detail=str(exc)) from exc
+    except TikTokAPIError as exc:
+        raise HTTPException(status_code=409, detail=str(exc)) from exc
+    except httpx.RequestError as exc:
+        raise HTTPException(status_code=502, detail="TikTok user-info endpoint unavailable") from exc
+
+    return _account_summary(account)
 
 
 @router.post("/accounts/{account_id}/disconnect", response_model=TikTokAccountSummary)
@@ -245,12 +269,4 @@ def disconnect_account(account_id: int, _: Admin, db: DbSession):
     account.updated_at = datetime.now(UTC)
     db.commit()
     db.refresh(account)
-    return TikTokAccountSummary(
-        id=account.id,
-        open_id=account.open_id,
-        scopes=_scope_list(account.scopes),
-        status=account.status,
-        access_token_expires_at=account.access_token_expires_at,
-        refresh_token_expires_at=account.refresh_token_expires_at,
-        last_token_refresh_at=account.last_token_refresh_at,
-    )
+    return _account_summary(account)

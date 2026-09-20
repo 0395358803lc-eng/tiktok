@@ -14,7 +14,7 @@ fi
 
 if [[ ! -f "$ROOT/runtime/backend.pid" ]] || ! kill -0 "$(cat "$ROOT/runtime/backend.pid")" 2>/dev/null; then
   cd "$ROOT/backend"
-  nohup "$ROOT/.venv/bin/uvicorn" app.main:app --host 0.0.0.0 --port 18000     > "$ROOT/logs/backend.log" 2>&1 &
+  nohup "$ROOT/.venv/bin/uvicorn" app.main:app --host 0.0.0.0 --port 18000 --no-access-log     > "$ROOT/logs/backend.log" 2>&1 &
   echo $! > "$ROOT/runtime/backend.pid"
 fi
 

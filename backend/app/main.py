@@ -1,4 +1,5 @@
 import logging
+import time
 import uuid
 
 from fastapi import FastAPI, Request
@@ -26,8 +27,18 @@ app.add_middleware(
 @app.middleware("http")
 async def request_context(request: Request, call_next):
     request_id = request.headers.get("x-request-id") or str(uuid.uuid4())
+    started = time.perf_counter()
     response = await call_next(request)
     response.headers["x-request-id"] = request_id
+    elapsed_ms = round((time.perf_counter() - started) * 1000, 2)
+    logger.info(
+        "request method=%s path=%s status=%s duration_ms=%s request_id=%s",
+        request.method,
+        request.url.path,
+        response.status_code,
+        elapsed_ms,
+        request_id,
+    )
     return response
 
 

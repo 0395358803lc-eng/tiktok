@@ -102,6 +102,19 @@ export default function App() {
     }
   }
 
+  async function syncProfile(id: number) {
+    setActionBusy(true);
+    setError("");
+    try {
+      await api.syncTikTokProfile(id);
+      await loadTikTok();
+    } catch (err) {
+      setError(err instanceof Error ? err.message : "Profile sync failed");
+    } finally {
+      setActionBusy(false);
+    }
+  }
+
   async function disconnectAccount(id: number) {
     setActionBusy(true);
     setError("");
@@ -229,9 +242,17 @@ export default function App() {
               <div className="accounts-list">
                 {accounts.map((account) => (
                   <article className="account-row" key={account.id}>
-                    <div>
-                      <strong>{account.open_id}</strong>
-                      <span>{account.scopes.join(", ")}</span>
+                    <div className="account-identity">
+                      {account.avatar_url ? (
+                        <img className="account-avatar" src={account.avatar_url} alt="" />
+                      ) : (
+                        <div className="account-avatar placeholder">TT</div>
+                      )}
+                      <div>
+                        <strong>{account.display_name || "TikTok account"}</strong>
+                        <span>{account.open_id}</span>
+                        <span>{account.scopes.join(", ")}</span>
+                      </div>
                     </div>
                     <div className="account-meta">
                       <StatusBadge
@@ -246,9 +267,16 @@ export default function App() {
                       <button
                         className="ghost"
                         disabled={actionBusy || account.status === "REVOKED"}
+                        onClick={() => syncProfile(account.id)}
+                      >
+                        Sync profile
+                      </button>
+                      <button
+                        className="ghost"
+                        disabled={actionBusy || account.status === "REVOKED"}
                         onClick={() => refreshAccount(account.id)}
                       >
-                        Refresh
+                        Refresh token
                       </button>
                       <button
                         className="danger"
@@ -266,11 +294,10 @@ export default function App() {
 
           <section className="panel next">
             <span className="eyebrow">IMPLEMENTATION STATUS</span>
-            <h3>OAuth backend complete, live credentials pending</h3>
+            <h3>OAuth connected — profile synchronization enabled</h3>
             <p>
-              State validation, callback handling, encrypted token storage, refresh and revoke
-              flows are implemented. End-to-end TikTok authorization becomes testable after the
-              Developer App credentials and HTTPS callback are configured.
+              Connected accounts use server-side encrypted tokens. Profile sync retrieves the
+              authorized TikTok display name and avatar without exposing raw credentials.
             </p>
           </section>
         </>

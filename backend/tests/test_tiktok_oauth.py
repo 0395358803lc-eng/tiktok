@@ -10,7 +10,7 @@ from app.db.session import SessionLocal
 from app.main import app
 from app.models.oauth_session import OAuthSession
 from app.models.tiktok_account import TikTokAccount
-from app.services.tiktok.client import TokenResponse
+from app.services.tiktok.client import TokenResponse, UserInfoResponse
 from app.services.tiktok.crypto import decrypt_token, encrypt_token
 from app.services.tiktok.oauth import build_authorize_url, state_digest
 
@@ -30,13 +30,25 @@ def _login() -> None:
 
 
 def test_oauth_configuration_gate():
-    _login()
-    config = client.get("/api/tiktok/config")
-    assert config.status_code == 200
-    assert config.json()["configured"] is False
+    settings = get_settings()
+    original_key = settings.tiktok_client_key
+    original_secret = settings.tiktok_client_secret
+    original_redirect = settings.tiktok_redirect_uri
+    settings.tiktok_client_key = None
+    settings.tiktok_client_secret = None
+    settings.tiktok_redirect_uri = None
+    try:
+        _login()
+        config = client.get("/api/tiktok/config")
+        assert config.status_code == 200
+        assert config.json()["configured"] is False
 
-    start = client.post("/api/tiktok/oauth/start")
-    assert start.status_code == 503
+        start = client.post("/api/tiktok/oauth/start")
+        assert start.status_code == 503
+    finally:
+        settings.tiktok_client_key = original_key
+        settings.tiktok_client_secret = original_secret
+        settings.tiktok_redirect_uri = original_redirect
 
 
 def test_authorize_url_contains_expected_web_oauth_fields():
@@ -187,3 +199,41 @@ def test_refresh_replaces_rotated_refresh_token(monkeypatch):
             settings.tiktok_client_key = original_key
             settings.tiktok_client_secret = original_secret
             settings.tiktok_redirect_uri = original_redirect
+
+
+def test_profile_sync_updates_profile_fields(monkeypatch):
+    from app.services.tiktok.profile import sync_account_profile
+
+    now = datetime.now(UTC)
+    with SessionLocal() as db:
+        db.execute(delete(TikTokAccount).where(TikTokAccount.open_id == "profile-open-id"))
+        account = TikTokAccount(
+            open_id="profile-open-id",
+            scopes="user.info.basic",
+            access_token_enc=encrypt_token("profile-access"),
+            refresh_token_enc=encrypt_token("profile-refresh"),
+            access_token_expires_at=now + timedelta(days=1),
+            refresh_token_expires_at=now + timedelta(days=30),
+            status="CONNECTED",
+            created_at=now,
+            updated_at=now,
+        )
+        db.add(account)
+        db.commit()
+
+        monkeypatch.setattr(
+            "app.services.tiktok.profile.get_user_info",
+            lambda **_: UserInfoResponse(
+                open_id="profile-open-id",
+                union_id="union-test",
+                display_name="Profile Test",
+                avatar_url="https://example.com/avatar.jpg",
+            ),
+        )
+        sync_account_profile(db, account)
+        assert account.union_id == "union-test"
+        assert account.display_name == "Profile Test"
+        assert account.avatar_url == "https://example.com/avatar.jpg"
+        assert account.profile_synced_at is not None
+        db.delete(account)
+        db.commit()

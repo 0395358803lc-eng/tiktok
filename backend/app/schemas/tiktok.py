@@ -16,8 +16,12 @@ class OAuthStartResponse(BaseModel):
 class TikTokAccountSummary(BaseModel):
     id: int
     open_id: str
+    union_id: str | None
+    display_name: str | None
+    avatar_url: str | None
     scopes: list[str]
     status: str
     access_token_expires_at: datetime
     refresh_token_expires_at: datetime
     last_token_refresh_at: datetime | None
+    profile_synced_at: datetime | None
