@@ -4,6 +4,7 @@ from sqlalchemy.orm import Session
 
 from app.core.settings import get_settings
 from app.models.tiktok_account import TikTokAccount
+from app.services.audit import record_audit
 from app.services.tiktok.client import TokenResponse, refresh_access_token
 from app.services.tiktok.crypto import decrypt_token, encrypt_token
 from app.services.tiktok.oauth import oauth_configured
@@ -45,4 +46,10 @@ def refresh_account_tokens(db: Session, account: TikTokAccount) -> TokenResponse
     account.updated_at = now
     db.commit()
     db.refresh(account)
+    record_audit(
+        db,
+        event_type="TOKEN_REFRESHED",
+        account_id=account.id,
+        detail="TikTok access token refreshed",
+    )
     return token

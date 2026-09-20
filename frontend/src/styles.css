@@ -367,3 +367,51 @@ button:disabled {
   .account-summary-grid { grid-template-columns: repeat(2, 1fr); }
   .account-toolbar { grid-template-columns: 1fr; }
 }
+
+
+.audit-list {
+  display: grid;
+  gap: 10px;
+  margin-top: 18px;
+}
+
+.audit-row {
+  display: grid;
+  grid-template-columns: minmax(0, 1fr) auto;
+  gap: 18px;
+  align-items: center;
+  padding: 14px 0;
+  border-top: 1px solid rgba(148, 163, 184, .12);
+}
+
+.audit-row:first-child {
+  border-top: 0;
+}
+
+.audit-row > div:first-child {
+  display: grid;
+  gap: 4px;
+}
+
+.audit-row span {
+  color: #94a3b8;
+  font-size: 13px;
+}
+
+.audit-meta {
+  display: flex;
+  gap: 10px;
+  align-items: center;
+  justify-content: flex-end;
+  flex-wrap: wrap;
+}
+
+@media (max-width: 800px) {
+  .audit-row {
+    grid-template-columns: 1fr;
+  }
+
+  .audit-meta {
+    justify-content: flex-start;
+  }
+}

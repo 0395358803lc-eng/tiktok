@@ -28,6 +28,16 @@ export type TikTokAccount = {
   profile_synced_at?: string | null;
 };
 
+export type AuditEvent = {
+  id: number;
+  event_type: string;
+  account_id?: number | null;
+  actor: string;
+  status: string;
+  detail?: string | null;
+  created_at: string;
+};
+
 type OAuthStart = { authorize_url: string };
 
 
@@ -57,6 +67,7 @@ export const api = {
   logout: () => json<AuthStatus>("/api/auth/logout", { method: "POST" }),
   tiktokConfig: () => json<TikTokConfigStatus>("/api/tiktok/config"),
   tiktokAccounts: () => json<TikTokAccount[]>("/api/tiktok/accounts"),
+  auditEvents: (limit = 50) => json<AuditEvent[]>(`/api/audit/events?limit=${limit}`),
   startTikTokOAuth: () =>
     json<OAuthStart>("/api/tiktok/oauth/start", { method: "POST" }),
   refreshTikTokAccount: (id: number) =>

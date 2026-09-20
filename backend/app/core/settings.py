@@ -27,6 +27,7 @@ class Settings(BaseSettings):
     tiktok_redirect_uri: str | None = None
     tiktok_scopes: str = "user.info.basic"
     oauth_state_ttl_seconds: int = 600
+    oauth_session_retention_seconds: int = 86400
     token_refresh_interval_seconds: int = 300
     token_refresh_lead_seconds: int = 7200
 

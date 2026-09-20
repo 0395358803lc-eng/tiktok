@@ -6,7 +6,7 @@ from fastapi import FastAPI, Request
 from fastapi.middleware.cors import CORSMiddleware
 from fastapi.responses import JSONResponse
 
-from app.api import auth, health, tiktok
+from app.api import audit, auth, health, tiktok
 from app.core.logging import configure_logging
 from app.core.settings import get_settings
 
@@ -51,3 +51,4 @@ async def handle_unexpected_error(request: Request, exc: Exception):
 app.include_router(health.router)
 app.include_router(auth.router, prefix="/api")
 app.include_router(tiktok.router, prefix="/api")
+app.include_router(audit.router, prefix="/api")

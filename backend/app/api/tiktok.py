@@ -13,6 +13,7 @@ from app.models.admin_session import AdminSession
 from app.models.oauth_session import OAuthSession
 from app.models.tiktok_account import TikTokAccount
 from app.schemas.tiktok import OAuthStartResponse, TikTokAccountSummary, TikTokConfigStatus
+from app.services.audit import record_audit
 from app.services.tiktok.client import (
     TikTokAPIError,
     TikTokOAuthError,
@@ -169,6 +170,14 @@ def oauth_callback(
     account.status = "CONNECTED"
     account.updated_at = now
     db.commit()
+    db.refresh(account)
+    record_audit(
+        db,
+        event_type="ACCOUNT_CONNECTED",
+        account_id=account.id,
+        actor="oauth",
+        detail="TikTok account authorized successfully",
+    )
 
     return _frontend_redirect("connected")
 
@@ -207,16 +216,37 @@ def refresh_account(account_id: int, _: Admin, db: DbSession):
         account.status = "REAUTH_REQUIRED"
         account.updated_at = datetime.now(UTC)
         db.commit()
+        record_audit(
+            db,
+            event_type="ACCOUNT_REAUTH_REQUIRED",
+            account_id=account.id,
+            status="WARNING",
+            detail=type(exc).__name__,
+        )
         raise HTTPException(status_code=409, detail=str(exc)) from exc
     except TikTokIdentityError as exc:
         account.status = "ERROR"
         account.updated_at = datetime.now(UTC)
         db.commit()
+        record_audit(
+            db,
+            event_type="ACCOUNT_ERROR",
+            account_id=account.id,
+            status="ERROR",
+            detail=type(exc).__name__,
+        )
         raise HTTPException(status_code=409, detail=str(exc)) from exc
     except httpx.RequestError as exc:
         account.status = "ERROR"
         account.updated_at = datetime.now(UTC)
         db.commit()
+        record_audit(
+            db,
+            event_type="ACCOUNT_ERROR",
+            account_id=account.id,
+            status="ERROR",
+            detail="TikTok token endpoint unavailable",
+        )
         raise HTTPException(status_code=502, detail="TikTok token endpoint unavailable") from exc
 
     return _account_summary(account)
@@ -269,4 +299,10 @@ def disconnect_account(account_id: int, _: Admin, db: DbSession):
     account.updated_at = datetime.now(UTC)
     db.commit()
     db.refresh(account)
+    record_audit(
+        db,
+        event_type="ACCOUNT_DISCONNECTED",
+        account_id=account.id,
+        detail="TikTok authorization revoked",
+    )
     return _account_summary(account)

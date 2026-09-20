@@ -9,6 +9,8 @@ from app.core.logging import configure_logging
 from app.core.settings import get_settings
 from app.db.session import SessionLocal
 from app.models.tiktok_account import TikTokAccount
+from app.services.audit import record_audit
+from app.services.oauth_cleanup import cleanup_oauth_sessions
 from app.services.tiktok.client import TikTokOAuthError
 from app.services.tiktok.oauth import oauth_configured
 from app.services.tiktok.tokens import (
@@ -23,6 +25,12 @@ logger = logging.getLogger("tiktok-token-worker")
 
 def run_once() -> int:
     settings = get_settings()
+
+    with SessionLocal() as db:
+        removed = cleanup_oauth_sessions(db, settings.oauth_session_retention_seconds)
+        if removed:
+            logger.info("OAuth session cleanup removed=%s", removed)
+
     if not oauth_configured(settings):
         logger.info("TikTok OAuth not configured; token refresh cycle skipped")
         return 0
@@ -44,6 +52,13 @@ def run_once() -> int:
                 account.status = "REAUTH_REQUIRED"
                 account.updated_at = now
                 db.commit()
+                record_audit(
+                    db,
+                    event_type="ACCOUNT_REAUTH_REQUIRED",
+                    account_id=account.id,
+                    status="WARNING",
+                    detail="Refresh token expired",
+                )
                 logger.warning("Refresh token expired for account_id=%s", account.id)
                 continue
 
@@ -55,6 +70,13 @@ def run_once() -> int:
                 account.status = "REAUTH_REQUIRED"
                 account.updated_at = datetime.now(UTC)
                 db.commit()
+                record_audit(
+                    db,
+                    event_type="ACCOUNT_REAUTH_REQUIRED",
+                    account_id=account.id,
+                    status="WARNING",
+                    detail=type(exc).__name__,
+                )
                 logger.warning(
                     "Token refresh requires reauth account_id=%s error=%s",
                     account.id,
@@ -65,6 +87,13 @@ def run_once() -> int:
                 account.status = "ERROR"
                 account.updated_at = datetime.now(UTC)
                 db.commit()
+                record_audit(
+                    db,
+                    event_type="ACCOUNT_ERROR",
+                    account_id=account.id,
+                    status="ERROR",
+                    detail=type(exc).__name__,
+                )
                 logger.warning(
                     "Token refresh failed account_id=%s error=%s",
                     account.id,

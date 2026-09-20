@@ -2,6 +2,7 @@ import { FormEvent, useEffect, useState } from "react";
 
 import {
   api,
+  AuditEvent,
   AuthStatus,
   ReadyStatus,
   TikTokAccount,
@@ -16,6 +17,7 @@ export default function App() {
   const [loading, setLoading] = useState(true);
   const [tiktokConfig, setTikTokConfig] = useState<TikTokConfigStatus | null>(null);
   const [accounts, setAccounts] = useState<TikTokAccount[]>([]);
+  const [auditEvents, setAuditEvents] = useState<AuditEvent[]>([]);
   const [oauthNotice, setOauthNotice] = useState("");
   const [actionBusy, setActionBusy] = useState(false);
   const [accountQuery, setAccountQuery] = useState("");
@@ -33,12 +35,14 @@ export default function App() {
 
 
   async function loadTikTok() {
-    const [configResult, accountsResult] = await Promise.allSettled([
+    const [configResult, accountsResult, auditResult] = await Promise.allSettled([
       api.tiktokConfig(),
       api.tiktokAccounts(),
+      api.auditEvents(),
     ]);
     if (configResult.status === "fulfilled") setTikTokConfig(configResult.value);
     if (accountsResult.status === "fulfilled") setAccounts(accountsResult.value);
+    if (auditResult.status === "fulfilled") setAuditEvents(auditResult.value);
   }
 
   useEffect(() => {
@@ -77,6 +81,7 @@ export default function App() {
     setAuth({ authenticated: false });
     setTikTokConfig(null);
     setAccounts([]);
+    setAuditEvents([]);
   }
 
   async function connectTikTok() {
@@ -348,6 +353,44 @@ export default function App() {
                       </button>
                     </div>
                   </article>
+                ))}
+              </div>
+            )}
+          </section>
+
+          <section className="panel audit-panel">
+            <div className="section-head">
+              <div>
+                <span className="eyebrow">AUDIT TRAIL</span>
+                <h3>Recent activity</h3>
+              </div>
+              <button className="ghost" onClick={loadTikTok} disabled={actionBusy}>
+                Refresh activity
+              </button>
+            </div>
+
+            {auditEvents.length === 0 ? (
+              <div className="empty-state">
+                <strong>No audit events yet.</strong>
+                <span>Account and admin activity will appear here.</span>
+              </div>
+            ) : (
+              <div className="audit-list">
+                {auditEvents.slice(0, 25).map((event) => (
+                  <div className="audit-row" key={event.id}>
+                    <div>
+                      <strong>{event.event_type}</strong>
+                      <span>{event.detail || "No additional detail"}</span>
+                    </div>
+                    <div className="audit-meta">
+                      <StatusBadge
+                        ok={event.status === "SUCCESS"}
+                        label={event.status}
+                      />
+                      <span>{event.account_id ? `Account #${event.account_id}` : event.actor}</span>
+                      <span>{new Date(event.created_at).toLocaleString()}</span>
+                    </div>
+                  </div>
                 ))}
               </div>
             )}

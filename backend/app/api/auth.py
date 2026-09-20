@@ -10,6 +10,7 @@ from app.core.settings import get_settings
 from app.db.session import get_db
 from app.models.admin_session import AdminSession
 from app.schemas.auth import AuthStatus, LoginRequest
+from app.services.audit import record_audit
 
 router = APIRouter(prefix="/auth", tags=["auth"])
 COOKIE_NAME = "th_admin_session"
@@ -51,6 +52,12 @@ def login(payload: LoginRequest, response: Response, db: DbSession):
     )
     db.add(session)
     db.commit()
+    record_audit(
+        db,
+        event_type="ADMIN_LOGIN",
+        actor=payload.username,
+        detail="Admin session created",
+    )
 
     response.set_cookie(
         COOKIE_NAME,
@@ -74,13 +81,23 @@ def me(db: DbSession, th_admin_session: AdminCookie = None):
 
 @router.post("/logout", response_model=AuthStatus)
 def logout(response: Response, db: DbSession, th_admin_session: AdminCookie = None):
+    actor = "admin"
     if th_admin_session:
+        session = _session_from_token(db, th_admin_session)
+        if session is not None:
+            actor = session.username
         db.execute(
             delete(AdminSession).where(
                 AdminSession.token_hash == token_digest(th_admin_session)
             )
         )
         db.commit()
+        record_audit(
+            db,
+            event_type="ADMIN_LOGOUT",
+            actor=actor,
+            detail="Admin session ended",
+        )
 
     response.delete_cookie(COOKIE_NAME, path="/")
     return AuthStatus(authenticated=False)
