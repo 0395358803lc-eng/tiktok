@@ -8,10 +8,18 @@ export type ReadyStatus = {
   checks?: Record<string, boolean>;
 };
 
+export type TikTokScopeCapability = {
+  scope: string;
+  label: string;
+  description: string;
+  configured: boolean;
+};
+
 export type TikTokConfigStatus = {
   configured: boolean;
   environment: string;
   scopes: string[];
+  scope_capabilities: TikTokScopeCapability[];
   redirect_uri?: string | null;
 };
 
@@ -21,6 +29,14 @@ export type TikTokAccount = {
   union_id?: string | null;
   display_name?: string | null;
   avatar_url?: string | null;
+  username?: string | null;
+  bio_description?: string | null;
+  profile_deep_link?: string | null;
+  is_verified?: boolean | null;
+  follower_count?: number | null;
+  following_count?: number | null;
+  likes_count?: number | null;
+  video_count?: number | null;
   scopes: string[];
   status: string;
   access_token_expires_at: string;
@@ -69,8 +85,11 @@ export const api = {
   tiktokConfig: () => json<TikTokConfigStatus>("/api/tiktok/config"),
   tiktokAccounts: () => json<TikTokAccount[]>("/api/tiktok/accounts"),
   auditEvents: (limit = 50) => json<AuditEvent[]>(`/api/audit/events?limit=${limit}`),
-  startTikTokOAuth: () =>
-    json<OAuthStart>("/api/tiktok/oauth/start", { method: "POST" }),
+  startTikTokOAuth: (scopes?: string[]) =>
+    json<OAuthStart>("/api/tiktok/oauth/start", {
+      method: "POST",
+      body: JSON.stringify({ scopes: scopes ?? null }),
+    }),
   refreshTikTokAccount: (id: number) =>
     json<TikTokAccount>(`/api/tiktok/accounts/${id}/refresh`, { method: "POST" }),
   syncTikTokProfile: (id: number) =>

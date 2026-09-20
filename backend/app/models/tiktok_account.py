@@ -1,6 +1,6 @@
 from datetime import datetime
 
-from sqlalchemy import DateTime, Integer, String, Text
+from sqlalchemy import BigInteger, Boolean, DateTime, Integer, String, Text
 from sqlalchemy.orm import Mapped, mapped_column
 
 from app.db.base import Base
@@ -14,6 +14,14 @@ class TikTokAccount(Base):
     union_id: Mapped[str | None] = mapped_column(String(128), nullable=True)
     display_name: Mapped[str | None] = mapped_column(String(255), nullable=True)
     avatar_url: Mapped[str | None] = mapped_column(Text, nullable=True)
+    username: Mapped[str | None] = mapped_column(String(255), nullable=True)
+    bio_description: Mapped[str | None] = mapped_column(Text, nullable=True)
+    profile_deep_link: Mapped[str | None] = mapped_column(Text, nullable=True)
+    is_verified: Mapped[bool | None] = mapped_column(Boolean, nullable=True)
+    follower_count: Mapped[int | None] = mapped_column(BigInteger, nullable=True)
+    following_count: Mapped[int | None] = mapped_column(BigInteger, nullable=True)
+    likes_count: Mapped[int | None] = mapped_column(BigInteger, nullable=True)
+    video_count: Mapped[int | None] = mapped_column(BigInteger, nullable=True)
     scopes: Mapped[str] = mapped_column(Text, default="")
     access_token_enc: Mapped[str] = mapped_column(Text)
     refresh_token_enc: Mapped[str] = mapped_column(Text)

@@ -22,6 +22,7 @@ export default function App() {
   const [actionBusy, setActionBusy] = useState(false);
   const [accountQuery, setAccountQuery] = useState("");
   const [statusFilter, setStatusFilter] = useState("ALL");
+  const [selectedScopes, setSelectedScopes] = useState<string[]>([]);
 
   async function refreshFoundation() {
     const [meResult, healthResult, readyResult] = await Promise.allSettled([
@@ -40,7 +41,14 @@ export default function App() {
       api.tiktokAccounts(),
       api.auditEvents(),
     ]);
-    if (configResult.status === "fulfilled") setTikTokConfig(configResult.value);
+    if (configResult.status === "fulfilled") {
+      setTikTokConfig(configResult.value);
+      setSelectedScopes((current) => {
+        const configured = configResult.value.scopes;
+        const retained = current.filter((scope) => configured.includes(scope));
+        return retained.length > 0 ? retained : configured;
+      });
+    }
     if (accountsResult.status === "fulfilled") setAccounts(accountsResult.value);
     if (auditResult.status === "fulfilled") setAuditEvents(auditResult.value);
   }
@@ -88,12 +96,21 @@ export default function App() {
     setActionBusy(true);
     setError("");
     try {
-      const result = await api.startTikTokOAuth();
+      const result = await api.startTikTokOAuth(selectedScopes);
       window.location.assign(result.authorize_url);
     } catch (err) {
       setError(err instanceof Error ? err.message : "Unable to start TikTok OAuth");
       setActionBusy(false);
     }
+  }
+
+  function toggleScope(scope: string) {
+    if (scope === "user.info.basic") return;
+    setSelectedScopes((current) =>
+      current.includes(scope)
+        ? current.filter((item) => item !== scope)
+        : [...current, scope],
+    );
   }
 
   async function refreshAccount(id: number) {
@@ -268,6 +285,44 @@ export default function App() {
               </span>
             </div>
 
+            <div className="scope-manager">
+              <div className="scope-manager-head">
+                <div>
+                  <strong>Personal API permissions</strong>
+                  <span>
+                    Only scopes enabled in the TikTok Developer Portal can be requested.
+                  </span>
+                </div>
+                <span className="scope-count">
+                  {selectedScopes.length} selected
+                </span>
+              </div>
+              <div className="scope-grid">
+                {tiktokConfig?.scope_capabilities.map((capability) => (
+                  <label
+                    className={capability.configured ? "scope-option" : "scope-option scope-disabled"}
+                    key={capability.scope}
+                  >
+                    <input
+                      type="checkbox"
+                      checked={selectedScopes.includes(capability.scope)}
+                      disabled={!capability.configured || capability.scope === "user.info.basic"}
+                      onChange={() => toggleScope(capability.scope)}
+                    />
+                    <span>
+                      <strong>{capability.label}</strong>
+                      <small>{capability.scope}</small>
+                      <small>{capability.description}</small>
+                    </span>
+                    <StatusBadge
+                      ok={capability.configured}
+                      label={capability.configured ? "Enabled" : "Not enabled"}
+                    />
+                  </label>
+                ))}
+              </div>
+            </div>
+
             {!tiktokConfig?.configured && (
               <div className="setup-box">
                 <strong>Developer credentials required</strong>
@@ -304,8 +359,23 @@ export default function App() {
                         <div className="account-avatar placeholder">TT</div>
                       )}
                       <div>
-                        <strong>{account.display_name || "TikTok account"}</strong>
+                        <strong>
+                          {account.display_name || "TikTok account"}
+                          {account.is_verified ? " ✓" : ""}
+                        </strong>
+                        {account.username && <span>@{account.username}</span>}
                         <span>{account.open_id}</span>
+                        {account.bio_description && <span>{account.bio_description}</span>}
+                        {account.profile_deep_link && (
+                          <a
+                            className="profile-link"
+                            href={account.profile_deep_link}
+                            target="_blank"
+                            rel="noreferrer"
+                          >
+                            Open TikTok profile
+                          </a>
+                        )}
                         <span>{account.scopes.join(", ")}</span>
                       </div>
                     </div>
@@ -324,6 +394,14 @@ export default function App() {
                         Token refresh {account.last_token_refresh_at ? new Date(account.last_token_refresh_at).toLocaleString() : "not yet"}
                       </span>
                     </div>
+                    {(account.follower_count !== null && account.follower_count !== undefined) && (
+                      <div className="account-stats">
+                        <Metric label="Followers" value={account.follower_count} />
+                        <Metric label="Following" value={account.following_count} />
+                        <Metric label="Likes" value={account.likes_count} />
+                        <Metric label="Videos" value={account.video_count} />
+                      </div>
+                    )}
                     <div className="account-actions">
                       {account.status !== "CONNECTED" && (
                         <button
@@ -410,6 +488,15 @@ export default function App() {
         </>
       )}
     </main>
+  );
+}
+
+function Metric({ label, value }: { label: string; value?: number | null }) {
+  return (
+    <span className="metric">
+      <small>{label}</small>
+      <strong>{typeof value === "number" ? value.toLocaleString() : "—"}</strong>
+    </span>
   );
 }
 

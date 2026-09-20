@@ -12,7 +12,13 @@ from app.core.settings import get_settings
 from app.models.admin_session import AdminSession
 from app.models.oauth_session import OAuthSession
 from app.models.tiktok_account import TikTokAccount
-from app.schemas.tiktok import OAuthStartResponse, TikTokAccountSummary, TikTokConfigStatus
+from app.schemas.tiktok import (
+    OAuthStartRequest,
+    OAuthStartResponse,
+    TikTokAccountSummary,
+    TikTokConfigStatus,
+    TikTokScopeCapability,
+)
 from app.services.audit import record_audit
 from app.services.tiktok.client import (
     TikTokAPIError,
@@ -23,6 +29,11 @@ from app.services.tiktok.client import (
 from app.services.tiktok.crypto import decrypt_token, encrypt_token
 from app.services.tiktok.oauth import build_authorize_url, new_state, oauth_configured, state_digest
 from app.services.tiktok.profile import TikTokProfileIdentityError, sync_account_profile
+from app.services.tiktok.scopes import (
+    SCOPE_CATALOG,
+    configured_personal_scopes,
+    validate_requested_scopes,
+)
 from app.services.tiktok.tokens import (
     TikTokConfigurationError,
     TikTokIdentityError,
@@ -44,6 +55,14 @@ def _account_summary(account: TikTokAccount) -> TikTokAccountSummary:
         union_id=account.union_id,
         display_name=account.display_name,
         avatar_url=account.avatar_url,
+        username=account.username,
+        bio_description=account.bio_description,
+        profile_deep_link=account.profile_deep_link,
+        is_verified=account.is_verified,
+        follower_count=account.follower_count,
+        following_count=account.following_count,
+        likes_count=account.likes_count,
+        video_count=account.video_count,
         scopes=_scope_list(account.scopes),
         status=account.status,
         access_token_expires_at=account.access_token_expires_at,
@@ -64,22 +83,40 @@ def _frontend_redirect(kind: str, message: str | None = None) -> RedirectRespons
 @router.get("/config", response_model=TikTokConfigStatus)
 def config_status(_: Admin):
     settings = get_settings()
+    configured_scopes = configured_personal_scopes(settings)
     return TikTokConfigStatus(
         configured=oauth_configured(settings),
         environment=settings.tiktok_environment.lower(),
-        scopes=_scope_list(settings.tiktok_scopes),
+        scopes=configured_scopes,
+        scope_capabilities=[
+            TikTokScopeCapability(
+                scope=item.scope,
+                label=item.label,
+                description=item.description,
+                configured=item.scope in configured_scopes,
+            )
+            for item in SCOPE_CATALOG
+        ],
         redirect_uri=settings.tiktok_redirect_uri or None,
     )
 
 
 @router.post("/oauth/start", response_model=OAuthStartResponse)
-def oauth_start(_: Admin, db: DbSession):
+def oauth_start(_: Admin, db: DbSession, payload: OAuthStartRequest | None = None):
     settings = get_settings()
     if not oauth_configured(settings):
         raise HTTPException(
             status_code=status.HTTP_503_SERVICE_UNAVAILABLE,
             detail="TikTok OAuth is not configured",
         )
+
+    try:
+        requested_scopes = validate_requested_scopes(
+            payload.scopes if payload else None,
+            settings,
+        )
+    except ValueError as exc:
+        raise HTTPException(status_code=400, detail=str(exc)) from exc
 
     raw_state = new_state()
     now = datetime.now(UTC)
@@ -88,11 +125,12 @@ def oauth_start(_: Admin, db: DbSession):
             state_hash=state_digest(raw_state),
             created_at=now,
             expires_at=now + timedelta(seconds=settings.oauth_state_ttl_seconds),
+            requested_scopes=",".join(requested_scopes),
         )
     )
     db.commit()
     return OAuthStartResponse(
-        authorize_url=build_authorize_url(settings, raw_state),
+        authorize_url=build_authorize_url(settings, raw_state, requested_scopes),
     )
 
 

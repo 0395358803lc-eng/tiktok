@@ -154,3 +154,18 @@ credentials are supported through `TIKTOK_SANDBOX_CLIENT_KEY`,
 `TIKTOK_SANDBOX_CLIENT_SECRET`, `TIKTOK_PRODUCTION_CLIENT_KEY`, and
 `TIKTOK_PRODUCTION_CLIENT_SECRET`. The original `TIKTOK_CLIENT_KEY` and
 `TIKTOK_CLIENT_SECRET` remain supported as migration fallbacks.
+
+
+## Personal API scope manager
+
+The personal-account integration supports dynamic authorization for:
+
+- `user.info.basic`
+- `user.info.profile`
+- `user.info.stats`
+
+Only scopes listed in `TIKTOK_SCOPES` are requestable. The backend rejects attempts to
+request a scope that has not been enabled for the current TikTok Developer App.
+
+The User Info client requests fields according to the scopes actually granted to each account,
+so a basic-only account never requests protected profile/statistics fields.
