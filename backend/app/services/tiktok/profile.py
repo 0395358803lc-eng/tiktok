@@ -3,6 +3,7 @@ from datetime import UTC, datetime
 from sqlalchemy.orm import Session
 
 from app.models.tiktok_account import TikTokAccount
+from app.services.analytics import capture_account_snapshot
 from app.services.audit import record_audit
 from app.services.tiktok.client import UserInfoResponse, get_user_info
 from app.services.tiktok.crypto import decrypt_token
@@ -36,6 +37,7 @@ def sync_account_profile(db: Session, account: TikTokAccount) -> UserInfoRespons
     account.updated_at = now
     db.commit()
     db.refresh(account)
+    capture_account_snapshot(db, account, captured_at=now)
     record_audit(
         db,
         event_type="PROFILE_SYNCED",

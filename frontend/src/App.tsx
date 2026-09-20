@@ -1,5 +1,6 @@
 import { FormEvent, useEffect, useState } from "react";
 
+import AnalyticsPanel from "./AnalyticsPanel";
 import VideoLibrary from "./VideoLibrary";
 
 import {
@@ -440,6 +441,8 @@ export default function App() {
               </div>
             )}
           </section>
+
+          <AnalyticsPanel accounts={accounts} />
 
           <VideoLibrary accounts={accounts} />
 

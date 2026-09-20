@@ -32,6 +32,12 @@ else
   printf "%-12s %s\n" "TokenWorker" "DOWN"
 fi
 
+if [[ -f "$ROOT/runtime/analytics-worker.pid" ]] && kill -0 "$(cat "$ROOT/runtime/analytics-worker.pid")" 2>/dev/null; then
+  printf "%-12s %s\n" "AnalyticsWorker" "UP"
+else
+  printf "%-12s %s\n" "AnalyticsWorker" "DOWN"
+fi
+
 if [[ -f "$ROOT/runtime/ngrok/ngrok.pid" ]] && kill -0 "$(cat "$ROOT/runtime/ngrok/ngrok.pid")" 2>/dev/null; then
   printf "%-12s %s\n" "Ngrok" "UP"
 else

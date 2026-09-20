@@ -50,6 +50,13 @@ while true; do
     repair=1
   fi
 
+  if [[ ! -f "$ROOT/runtime/analytics-worker.pid" ]] || \
+     ! kill -0 "$(cat "$ROOT/runtime/analytics-worker.pid" 2>/dev/null || echo 0)" 2>/dev/null; then
+    rm -f "$ROOT/runtime/analytics-worker.pid"
+    log "process failure component=analytics-worker"
+    repair=1
+  fi
+
   if (( frontend_ok )); then
     if ! curl -fsS --max-time 8 "$PUBLIC_URL" >/dev/null 2>&1; then
       log "health failure component=ngrok"

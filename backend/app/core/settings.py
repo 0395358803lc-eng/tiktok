@@ -35,6 +35,8 @@ class Settings(BaseSettings):
     oauth_session_retention_seconds: int = 86400
     token_refresh_interval_seconds: int = 300
     token_refresh_lead_seconds: int = 7200
+    analytics_interval_seconds: int = 21600
+    analytics_max_videos_per_cycle: int = 100
 
     @property
     def active_tiktok_client_key(self) -> str | None:

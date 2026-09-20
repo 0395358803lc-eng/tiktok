@@ -72,6 +72,48 @@ export type TikTokVideoSyncResult = {
   has_more: boolean;
 };
 
+export type AccountAnalyticsPoint = {
+  captured_at: string;
+  follower_count?: number | null;
+  following_count?: number | null;
+  likes_count?: number | null;
+  video_count?: number | null;
+};
+
+export type AnalyticsDelta = {
+  followers?: number | null;
+  following?: number | null;
+  likes?: number | null;
+  videos?: number | null;
+};
+
+export type VideoAnalyticsSummary = {
+  video_id: string;
+  title?: string | null;
+  share_url?: string | null;
+  cover_image_url?: string | null;
+  view_count?: number | null;
+  like_count?: number | null;
+  comment_count?: number | null;
+  share_count?: number | null;
+  view_delta?: number | null;
+  like_delta?: number | null;
+  comment_delta?: number | null;
+  share_delta?: number | null;
+  first_captured_at: string;
+  last_captured_at: string;
+};
+
+export type TikTokAnalyticsReport = {
+  account_id: number;
+  days: number;
+  account_points: AccountAnalyticsPoint[];
+  account_deltas: AnalyticsDelta;
+  top_videos: VideoAnalyticsSummary[];
+  account_snapshot_count: number;
+  video_snapshot_count: number;
+};
+
 export type AuditEvent = {
   id: number;
   event_type: string;
@@ -123,6 +165,8 @@ export const api = {
     json<TikTokAccount>(`/api/tiktok/accounts/${id}/sync-profile`, { method: "POST" }),
   tiktokVideos: (id: number, limit = 100, offset = 0) =>
     json<TikTokVideo[]>(`/api/tiktok/accounts/${id}/videos?limit=${limit}&offset=${offset}`),
+  tiktokAnalytics: (id: number, days: 7 | 30 | 90) =>
+    json<TikTokAnalyticsReport>(`/api/tiktok/accounts/${id}/analytics?days=${days}`),
   syncTikTokVideos: (id: number, cursor?: number | null, maxCount = 20) =>
     json<TikTokVideoSyncResult>(`/api/tiktok/accounts/${id}/videos/sync`, {
       method: "POST",

@@ -187,3 +187,17 @@ the video-query endpoint because TikTok cover-image URLs are temporary.
 
 The backend refuses live sync/refresh operations unless the connected account actually
 granted `video.list`.
+
+
+## Personal Analytics Engine
+
+Historical analytics are stored only from real synchronized TikTok data.
+
+- `user.info.stats` supplies account-level snapshots.
+- `video.list` supplies video-level metric snapshots.
+- `GET /api/tiktok/accounts/{id}/analytics?days=7|30|90` returns historical deltas.
+- AnalyticsWorker refreshes eligible connected accounts every six hours by default.
+- `ANALYTICS_INTERVAL_SECONDS` controls the interval.
+- `ANALYTICS_MAX_VIDEOS_PER_CYCLE` caps video refresh work per account.
+
+No historical data is simulated when a scope is missing or an account has not accumulated enough observations.

@@ -7,6 +7,7 @@ from sqlalchemy.orm import Session
 
 from app.models.tiktok_account import TikTokAccount
 from app.models.tiktok_video import TikTokVideo
+from app.services.analytics import capture_video_snapshots
 from app.services.audit import record_audit
 from app.services.tiktok.client import TikTokAPIError
 from app.services.tiktok.crypto import decrypt_token
@@ -234,6 +235,12 @@ def sync_video_page(
     for item in page.videos:
         _upsert_video(db, account=account, item=item, now=now)
     db.commit()
+    capture_video_snapshots(
+        db,
+        account_id=account.id,
+        video_ids=[item.video_id for item in page.videos],
+        captured_at=now,
+    )
     record_audit(
         db,
         event_type="VIDEOS_SYNCED",
@@ -258,6 +265,12 @@ def refresh_video_metadata(
     for item in items:
         _upsert_video(db, account=account, item=item, now=now)
     db.commit()
+    capture_video_snapshots(
+        db,
+        account_id=account.id,
+        video_ids=[item.video_id for item in items],
+        captured_at=now,
+    )
     record_audit(
         db,
         event_type="VIDEOS_REFRESHED",
