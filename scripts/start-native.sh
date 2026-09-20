@@ -39,6 +39,13 @@ if [[ ! -f "$ROOT/runtime/draft-worker.pid" ]] || ! kill -0 "$(cat "$ROOT/runtim
   echo $! > "$ROOT/runtime/draft-worker.pid"
 fi
 
+if [[ ! -f "$ROOT/runtime/scheduler-worker.pid" ]] || ! kill -0 "$(cat "$ROOT/runtime/scheduler-worker.pid")" 2>/dev/null; then
+  cd "$ROOT/backend"
+  nohup "$ROOT/.venv/bin/python" -m app.workers.tiktok_scheduler \
+    > "$ROOT/logs/scheduler-worker.log" 2>&1 &
+  echo $! > "$ROOT/runtime/scheduler-worker.pid"
+fi
+
 if [[ ! -f "$ROOT/runtime/publish-worker.pid" ]] || ! kill -0 "$(cat "$ROOT/runtime/publish-worker.pid")" 2>/dev/null; then
   cd "$ROOT/backend"
   nohup "$ROOT/.venv/bin/python" -m app.workers.tiktok_publish     > "$ROOT/logs/publish-worker.log" 2>&1 &

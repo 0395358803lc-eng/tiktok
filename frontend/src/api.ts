@@ -177,8 +177,27 @@ export type PublishJob = {
   uploaded_bytes?: number | null;
   downloaded_bytes?: number | null;
   public_post_ids: string[];
+  scheduled_at?: string | null;
+  schedule_status: string;
+  retry_count: number;
+  max_retries: number;
+  next_attempt_at?: string | null;
+  last_attempt_at?: string | null;
+  canceled_at?: string | null;
   created_at: string;
   updated_at: string;
+};
+
+export type PublishSchedule = {
+  days: number;
+  total: number;
+  scheduled: number;
+  ready: number;
+  running: number;
+  completed: number;
+  failed: number;
+  canceled: number;
+  jobs: PublishJob[];
 };
 
 export type WebhookEvent = {
@@ -278,6 +297,8 @@ export const api = {
       video_cover_timestamp_ms?: number;
       consent_music_usage: boolean;
       consent_branded_policy: boolean;
+      scheduled_at?: string;
+      max_retries?: number;
     },
   ) =>
     json<PublishJob>("/api/tiktok/accounts/" + accountId + "/publish/video", {
@@ -299,6 +320,8 @@ export const api = {
       is_aigc: boolean;
       consent_music_usage: boolean;
       consent_branded_policy: boolean;
+      scheduled_at?: string;
+      max_retries?: number;
     },
   ) =>
     json<PublishJob>("/api/tiktok/accounts/" + accountId + "/publish/photo", {
@@ -309,6 +332,20 @@ export const api = {
     json<PublishJob>("/api/tiktok/publish-jobs/" + jobId + "/refresh", {
       method: "POST",
     }),
+  publishSchedule: (days: 7 | 30, accountId?: number) => {
+    const query = new URLSearchParams({ days: String(days) });
+    if (accountId) query.set("account_id", String(accountId));
+    return json<PublishSchedule>("/api/tiktok/publish-schedule?" + query.toString());
+  },
+  cancelPublishJob: (jobId: number) =>
+    json<PublishJob>("/api/tiktok/publish-jobs/" + jobId + "/cancel", { method: "POST" }),
+  reschedulePublishJob: (jobId: number, scheduledAt: string) =>
+    json<PublishJob>("/api/tiktok/publish-jobs/" + jobId + "/reschedule", {
+      method: "POST",
+      body: JSON.stringify({ scheduled_at: scheduledAt }),
+    }),
+  retryPublishJob: (jobId: number) =>
+    json<PublishJob>("/api/tiktok/publish-jobs/" + jobId + "/retry", { method: "POST" }),
   draftJobs: (accountId?: number) =>
     json<DraftJob[]>(`/api/tiktok/drafts${accountId ? `?account_id=${accountId}` : ""}`),
   createVideoDraft: (accountId: number, mediaAssetId: number) =>

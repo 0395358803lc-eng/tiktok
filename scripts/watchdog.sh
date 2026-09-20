@@ -50,6 +50,13 @@ while true; do
     repair=1
   fi
 
+  if [[ ! -f "$ROOT/runtime/scheduler-worker.pid" ]] || \
+     ! kill -0 "$(cat "$ROOT/runtime/scheduler-worker.pid" 2>/dev/null || echo 0)" 2>/dev/null; then
+    rm -f "$ROOT/runtime/scheduler-worker.pid"
+    log "process failure component=scheduler-worker"
+    repair=1
+  fi
+
   if [[ ! -f "$ROOT/runtime/webhook-worker.pid" ]] || \
      ! kill -0 "$(cat "$ROOT/runtime/webhook-worker.pid" 2>/dev/null || echo 0)" 2>/dev/null; then
     rm -f "$ROOT/runtime/webhook-worker.pid"

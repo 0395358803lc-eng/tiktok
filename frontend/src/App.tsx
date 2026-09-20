@@ -2,6 +2,7 @@ import { FormEvent, useEffect, useState } from "react";
 
 import AnalyticsPanel from "./AnalyticsPanel";
 import DirectPostPanel from "./DirectPostPanel";
+import SchedulerPanel from "./SchedulerPanel";
 import DraftUploadPanel from "./DraftUploadPanel";
 import VideoLibrary from "./VideoLibrary";
 import WebhookPanel from "./WebhookPanel";
@@ -450,6 +451,8 @@ export default function App() {
           <DraftUploadPanel accounts={accounts} />
 
           <DirectPostPanel accounts={accounts} />
+
+          <SchedulerPanel accounts={accounts} />
 
           <VideoLibrary accounts={accounts} />
 

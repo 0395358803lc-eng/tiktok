@@ -37,6 +37,9 @@ export default function DirectPostPanel({ accounts }: Props) {
   const [photoUrls, setPhotoUrls] = useState("");
   const [photoCoverIndex, setPhotoCoverIndex] = useState(0);
   const [coverSeconds, setCoverSeconds] = useState("");
+  const [scheduleEnabled, setScheduleEnabled] = useState(false);
+  const [scheduledAt, setScheduledAt] = useState("");
+  const [maxRetries, setMaxRetries] = useState(2);
   const [busy, setBusy] = useState(false);
   const [creatorBusy, setCreatorBusy] = useState(false);
   const [error, setError] = useState("");
@@ -121,6 +124,9 @@ export default function DirectPostPanel({ accounts }: Props) {
     setTitle("");
     setPhotoDescription("");
     setCoverSeconds("");
+    setScheduleEnabled(false);
+    setScheduledAt("");
+    setMaxRetries(2);
   }
 
   async function loadCreator(accountId: number) {
@@ -211,6 +217,17 @@ export default function DirectPostPanel({ accounts }: Props) {
     return null;
   }
 
+  function resolveScheduledAt(): string | undefined {
+    if (!scheduleEnabled) return undefined;
+    if (!scheduledAt) throw new Error("Choose a scheduled date and time.");
+    const value = new Date(scheduledAt);
+    if (!Number.isFinite(value.getTime())) throw new Error("Scheduled time is invalid.");
+    if (value.getTime() <= Date.now() + 30_000) {
+      throw new Error("Scheduled time must be at least 30 seconds in the future.");
+    }
+    return value.toISOString();
+  }
+
   async function queueVideo() {
     if (!selected || selectedAsset === null) return;
     const commonError = validateCommon();
@@ -236,6 +253,14 @@ export default function DirectPostPanel({ accounts }: Props) {
       return;
     }
 
+    let scheduledIso: string | undefined;
+    try {
+      scheduledIso = resolveScheduledAt();
+    } catch (err) {
+      setError(err instanceof Error ? err.message : "Invalid scheduled time");
+      return;
+    }
+
     setBusy(true);
     setError("");
     setNotice("");
@@ -254,12 +279,16 @@ export default function DirectPostPanel({ accounts }: Props) {
           seconds === undefined ? undefined : Math.round(seconds * 1000),
         consent_music_usage: consentAccepted,
         consent_branded_policy: consentAccepted && commercial && brandedContent,
+        scheduled_at: scheduledIso,
+        max_retries: maxRetries,
       });
       await loadJobs(selected.id);
       setNotice(
         "Direct Post job #" +
           job.id +
-          " queued. PublishWorker will re-check Creator Info before sending.",
+          (scheduleEnabled
+          ? " scheduled. SchedulerWorker will release it at the selected time."
+          : " queued. PublishWorker will re-check Creator Info before sending."),
       );
     } catch (err) {
       setError(err instanceof Error ? err.message : "Unable to queue Direct Post");
@@ -275,6 +304,14 @@ export default function DirectPostPanel({ accounts }: Props) {
       setError(commonError);
       return;
     }
+    let scheduledIso: string | undefined;
+    try {
+      scheduledIso = resolveScheduledAt();
+    } catch (err) {
+      setError(err instanceof Error ? err.message : "Invalid scheduled time");
+      return;
+    }
+
     setBusy(true);
     setError("");
     setNotice("");
@@ -292,12 +329,16 @@ export default function DirectPostPanel({ accounts }: Props) {
         is_aigc: isAigc,
         consent_music_usage: consentAccepted,
         consent_branded_policy: consentAccepted && commercial && brandedContent,
+        scheduled_at: scheduledIso,
+        max_retries: maxRetries,
       });
       await loadJobs(selected.id);
       setNotice(
         "Photo Direct Post job #" +
           job.id +
-          " queued. TikTok will pull the images from the verified URLs.",
+          (scheduleEnabled
+          ? " scheduled. SchedulerWorker will release it at the selected time."
+          : " queued. TikTok will pull the images from the verified URLs."),
       );
     } catch (err) {
       setError(err instanceof Error ? err.message : "Unable to queue photo Direct Post");
@@ -652,6 +693,40 @@ export default function DirectPostPanel({ accounts }: Props) {
                 <span>{declaration}</span>
               </label>
 
+              <div className="direct-schedule-box">
+                <label className="check-label">
+                  <input
+                    type="checkbox"
+                    checked={scheduleEnabled}
+                    onChange={(event) => setScheduleEnabled(event.target.checked)}
+                  />
+                  Schedule instead of publishing now
+                </label>
+                {scheduleEnabled && (
+                  <div className="schedule-input-grid">
+                    <label>
+                      Local date & time
+                      <input
+                        type="datetime-local"
+                        value={scheduledAt}
+                        onChange={(event) => setScheduledAt(event.target.value)}
+                      />
+                    </label>
+                    <label>
+                      Max safe retries
+                      <input
+                        type="number"
+                        min="0"
+                        max="5"
+                        value={maxRetries}
+                        onChange={(event) => setMaxRetries(Number(event.target.value))}
+                      />
+                    </label>
+                    <span>Time is converted to UTC by the browser before it reaches the scheduler.</span>
+                  </div>
+                )}
+              </div>
+
               <button
                 disabled={
                   busy ||
@@ -661,11 +736,12 @@ export default function DirectPostPanel({ accounts }: Props) {
                   !consentAccepted ||
                   (commercial && !yourBrand && !brandedContent) ||
                   (mode === "VIDEO" && selectedAsset === null) ||
-                  (mode === "PHOTO" && parsedPhotoUrls.length === 0)
+                  (mode === "PHOTO" && parsedPhotoUrls.length === 0) ||
+                  (scheduleEnabled && !scheduledAt)
                 }
                 onClick={mode === "VIDEO" ? queueVideo : queuePhoto}
               >
-                {busy ? "Working…" : "Publish directly to TikTok"}
+                {busy ? "Working…" : scheduleEnabled ? "Schedule Direct Post" : "Publish directly to TikTok"}
               </button>
             </article>
           </div>
@@ -696,6 +772,10 @@ export default function DirectPostPanel({ accounts }: Props) {
                   <div>
                     <strong>#{job.id} · {job.media_type} · {privacyLabel(job.privacy_level)}</strong>
                     <span>{new Date(job.created_at).toLocaleString()}</span>
+                    <span>Queue: {job.schedule_status}</span>
+                    {job.scheduled_at && (
+                      <span>Scheduled: {new Date(job.scheduled_at).toLocaleString()}</span>
+                    )}
                     {job.publish_id && <span>Publish ID: {job.publish_id}</span>}
                     {job.public_post_ids.length > 0 && (
                       <span>Post IDs: {job.public_post_ids.join(", ")}</span>

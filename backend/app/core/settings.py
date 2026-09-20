@@ -43,6 +43,9 @@ class Settings(BaseSettings):
     publish_worker_interval_seconds: int = 30
     webhook_signature_tolerance_seconds: int = 300
     webhook_worker_interval_seconds: int = 5
+    scheduler_worker_interval_seconds: int = 10
+    scheduler_ready_batch_size: int = 50
+    publish_retry_base_seconds: int = 300
 
     @property
     def active_tiktok_client_key(self) -> str | None:

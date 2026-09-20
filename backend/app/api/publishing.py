@@ -1,11 +1,11 @@
 import json
-from datetime import UTC, datetime
+from datetime import UTC, datetime, timedelta
 from typing import Annotated
 
 import httpx
 from fastapi import APIRouter, Depends, File, Form, HTTPException, Query, UploadFile
 from fastapi.responses import FileResponse
-from sqlalchemy import select
+from sqlalchemy import and_, or_, select
 
 from app.api.auth import DbSession, require_admin
 from app.models.admin_session import AdminSession
@@ -21,6 +21,8 @@ from app.schemas.publishing import (
     MediaAssetSummary,
     PhotoDraftCreateRequest,
     PublishJobSummary,
+    PublishRescheduleRequest,
+    PublishScheduleSummary,
     VideoDraftCreateRequest,
 )
 from app.services.audit import record_audit
@@ -114,9 +116,35 @@ def _publish_summary(job: TikTokPublishJob) -> PublishJobSummary:
         uploaded_bytes=job.uploaded_bytes,
         downloaded_bytes=job.downloaded_bytes,
         public_post_ids=[str(value) for value in public_ids],
+        scheduled_at=job.scheduled_at,
+        schedule_status=job.schedule_status,
+        retry_count=job.retry_count,
+        max_retries=job.max_retries,
+        next_attempt_at=job.next_attempt_at,
+        last_attempt_at=job.last_attempt_at,
+        canceled_at=job.canceled_at,
         created_at=job.created_at,
         updated_at=job.updated_at,
     )
+
+
+def _schedule_values(
+    scheduled_at: datetime | None,
+) -> tuple[datetime | None, str]:
+    if scheduled_at is None:
+        return None, "READY"
+    if scheduled_at.tzinfo is None:
+        raise HTTPException(
+            status_code=400,
+            detail="scheduled_at must include a timezone offset",
+        )
+    value = scheduled_at.astimezone(UTC)
+    if value <= datetime.now(UTC) + timedelta(seconds=30):
+        raise HTTPException(
+            status_code=400,
+            detail="Scheduled publish time must be at least 30 seconds in the future",
+        )
+    return value, "SCHEDULED"
 
 
 def _connected_publish_account(db: DbSession, account_id: int) -> TikTokAccount:
@@ -379,6 +407,8 @@ def create_video_publish_job(
     if asset.kind != "VIDEO":
         raise HTTPException(status_code=400, detail="Selected media asset is not a video")
 
+    scheduled_at, schedule_status = _schedule_values(payload.scheduled_at)
+
     try:
         info = query_creator_info(account)
         options = DirectPostOptions(
@@ -425,6 +455,10 @@ def create_video_publish_job(
         consent_branded_policy=payload.consent_branded_policy,
         creator_info_json=creator_info_json(info),
         status="QUEUED",
+        scheduled_at=scheduled_at,
+        schedule_status=schedule_status,
+        retry_count=0,
+        max_retries=payload.max_retries,
         created_at=now,
         updated_at=now,
     )
@@ -435,7 +469,7 @@ def create_video_publish_job(
         db,
         event_type="DIRECT_POST_QUEUED",
         account_id=account.id,
-        detail=f"Queued Direct Post video job id={job.id}",
+        detail=f"Direct Post video job id={job.id} schedule_status={job.schedule_status}",
     )
     return _publish_summary(job)
 
@@ -451,6 +485,7 @@ def create_photo_publish_job(
     db: DbSession,
 ):
     account = _connected_publish_account(db, account_id)
+    scheduled_at, schedule_status = _schedule_values(payload.scheduled_at)
     try:
         info = query_creator_info(account)
         options = DirectPostOptions(
@@ -506,6 +541,10 @@ def create_photo_publish_job(
         consent_branded_policy=payload.consent_branded_policy,
         creator_info_json=creator_info_json(info),
         status="QUEUED",
+        scheduled_at=scheduled_at,
+        schedule_status=schedule_status,
+        retry_count=0,
+        max_retries=payload.max_retries,
         created_at=now,
         updated_at=now,
     )
@@ -516,7 +555,169 @@ def create_photo_publish_job(
         db,
         event_type="DIRECT_POST_QUEUED",
         account_id=account.id,
-        detail=f"Queued Direct Post photo job id={job.id}",
+        detail=f"Direct Post photo job id={job.id} schedule_status={job.schedule_status}",
+    )
+    return _publish_summary(job)
+
+
+@router.get("/publish-schedule", response_model=PublishScheduleSummary)
+def publish_schedule(
+    _: Admin,
+    db: DbSession,
+    days: int = Query(default=7),
+    account_id: int | None = Query(default=None),
+):
+    if days not in {7, 30}:
+        raise HTTPException(status_code=400, detail="Schedule range must be 7 or 30 days")
+    now = datetime.now(UTC)
+    end = now + timedelta(days=days)
+    window_start = now - timedelta(days=1)
+    query = select(TikTokPublishJob).where(
+        or_(
+            and_(
+                TikTokPublishJob.scheduled_at.is_not(None),
+                TikTokPublishJob.scheduled_at >= window_start,
+                TikTokPublishJob.scheduled_at <= end,
+            ),
+            and_(
+                TikTokPublishJob.next_attempt_at.is_not(None),
+                TikTokPublishJob.next_attempt_at >= window_start,
+                TikTokPublishJob.next_attempt_at <= end,
+            ),
+        )
+    )
+    if account_id is not None:
+        query = query.where(TikTokPublishJob.account_id == account_id)
+    rows = db.scalars(
+        query.order_by(
+            TikTokPublishJob.next_attempt_at.asc().nulls_last(),
+            TikTokPublishJob.scheduled_at.asc().nulls_last(),
+            TikTokPublishJob.id.asc(),
+        )
+    ).all()
+    counts = {
+        "SCHEDULED": 0,
+        "READY": 0,
+        "RUNNING": 0,
+        "COMPLETED": 0,
+        "FAILED": 0,
+        "CANCELED": 0,
+    }
+    for row in rows:
+        if row.schedule_status in counts:
+            counts[row.schedule_status] += 1
+    return PublishScheduleSummary(
+        days=days,
+        total=len(rows),
+        scheduled=counts["SCHEDULED"],
+        ready=counts["READY"],
+        running=counts["RUNNING"],
+        completed=counts["COMPLETED"],
+        failed=counts["FAILED"],
+        canceled=counts["CANCELED"],
+        jobs=[_publish_summary(row) for row in rows],
+    )
+
+
+@router.post("/publish-jobs/{job_id}/cancel", response_model=PublishJobSummary)
+def cancel_publish_job(job_id: int, _: Admin, db: DbSession):
+    job = db.get(TikTokPublishJob, job_id)
+    if job is None:
+        raise HTTPException(status_code=404, detail="Publish job not found")
+    if job.publish_id is not None:
+        raise HTTPException(
+            status_code=409,
+            detail="A post already submitted to TikTok cannot be canceled locally",
+        )
+    if job.schedule_status not in {"SCHEDULED", "READY"}:
+        raise HTTPException(status_code=409, detail="Publish job cannot be canceled now")
+
+    now = datetime.now(UTC)
+    job.status = "CANCELED"
+    job.schedule_status = "CANCELED"
+    job.canceled_at = now
+    job.updated_at = now
+    db.commit()
+    db.refresh(job)
+    record_audit(
+        db,
+        event_type="DIRECT_POST_CANCELED",
+        account_id=job.account_id,
+        detail=f"Canceled Direct Post job id={job.id}",
+    )
+    return _publish_summary(job)
+
+
+@router.post(
+    "/publish-jobs/{job_id}/reschedule",
+    response_model=PublishJobSummary,
+)
+def reschedule_publish_job(
+    job_id: int,
+    payload: PublishRescheduleRequest,
+    _: Admin,
+    db: DbSession,
+):
+    job = db.get(TikTokPublishJob, job_id)
+    if job is None:
+        raise HTTPException(status_code=404, detail="Publish job not found")
+    if job.publish_id is not None:
+        raise HTTPException(
+            status_code=409,
+            detail="A post already submitted to TikTok cannot be rescheduled",
+        )
+    if job.schedule_status not in {"SCHEDULED", "READY"}:
+        raise HTTPException(status_code=409, detail="Publish job cannot be rescheduled now")
+
+    scheduled_at, _ = _schedule_values(payload.scheduled_at)
+    now = datetime.now(UTC)
+    job.status = "QUEUED"
+    job.schedule_status = "SCHEDULED"
+    job.scheduled_at = scheduled_at
+    job.next_attempt_at = None
+    job.canceled_at = None
+    job.fail_reason = None
+    job.updated_at = now
+    db.commit()
+    db.refresh(job)
+    record_audit(
+        db,
+        event_type="DIRECT_POST_RESCHEDULED",
+        account_id=job.account_id,
+        detail=f"Rescheduled Direct Post job id={job.id} for {scheduled_at.isoformat()}",
+    )
+    return _publish_summary(job)
+
+
+@router.post("/publish-jobs/{job_id}/retry", response_model=PublishJobSummary)
+def retry_publish_job(job_id: int, _: Admin, db: DbSession):
+    job = db.get(TikTokPublishJob, job_id)
+    if job is None:
+        raise HTTPException(status_code=404, detail="Publish job not found")
+    if job.publish_id is not None:
+        raise HTTPException(
+            status_code=409,
+            detail="A submitted TikTok post cannot be re-initialized",
+        )
+    if job.schedule_status != "FAILED" or job.status != "FAILED":
+        raise HTTPException(status_code=409, detail="Only failed pre-submit jobs can be retried")
+    if job.retry_count >= job.max_retries:
+        raise HTTPException(status_code=409, detail="Publish retry limit has been reached")
+
+    now = datetime.now(UTC)
+    job.retry_count += 1
+    job.status = "QUEUED"
+    job.schedule_status = "READY"
+    job.next_attempt_at = None
+    job.fail_reason = None
+    job.updated_at = now
+    db.commit()
+    db.refresh(job)
+    record_audit(
+        db,
+        event_type="DIRECT_POST_MANUAL_RETRY",
+        account_id=job.account_id,
+        detail=f"Manual retry for Direct Post job id={job.id} retry={job.retry_count}",
     )
     return _publish_summary(job)
 

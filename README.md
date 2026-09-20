@@ -264,3 +264,36 @@ Runtime configuration:
 
 - `WEBHOOK_SIGNATURE_TOLERANCE_SECONDS=300`
 - `WEBHOOK_WORKER_INTERVAL_SECONDS=5`
+
+
+## Publishing Scheduler
+
+Direct Post jobs can be published immediately or scheduled internally.
+
+Scheduling is stored in PostgreSQL and uses a separate queue state:
+
+- `SCHEDULED`
+- `READY`
+- `RUNNING`
+- `COMPLETED`
+- `FAILED`
+- `CANCELED`
+
+SchedulerWorker promotes due jobs to `READY`; PublishWorker consumes only ready jobs and
+re-checks current Creator Info before TikTok initialization.
+
+Queue-management routes:
+
+- `GET /api/tiktok/publish-schedule?days=7|30`
+- `POST /api/tiktok/publish-jobs/{id}/cancel`
+- `POST /api/tiktok/publish-jobs/{id}/reschedule`
+- `POST /api/tiktok/publish-jobs/{id}/retry`
+
+Safe automatic retry is limited to pre-init Creator Info network failures. Once TikTok has
+returned a `publish_id`, the application does not automatically initialize a second post.
+
+Runtime configuration:
+
+- `SCHEDULER_WORKER_INTERVAL_SECONDS=10`
+- `SCHEDULER_READY_BATCH_SIZE=50`
+- `PUBLISH_RETRY_BASE_SECONDS=300`

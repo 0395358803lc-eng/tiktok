@@ -68,6 +68,8 @@ class DirectVideoPostRequest(BaseModel):
     video_cover_timestamp_ms: int | None = None
     consent_music_usage: bool = False
     consent_branded_policy: bool = False
+    scheduled_at: datetime | None = None
+    max_retries: int = Field(default=2, ge=0, le=5)
 
 
 class DirectPhotoPostRequest(BaseModel):
@@ -83,6 +85,8 @@ class DirectPhotoPostRequest(BaseModel):
     is_aigc: bool = False
     consent_music_usage: bool = False
     consent_branded_policy: bool = False
+    scheduled_at: datetime | None = None
+    max_retries: int = Field(default=2, ge=0, le=5)
 
 
 class PublishJobSummary(BaseModel):
@@ -108,5 +112,28 @@ class PublishJobSummary(BaseModel):
     uploaded_bytes: int | None
     downloaded_bytes: int | None
     public_post_ids: list[str]
+    scheduled_at: datetime | None
+    schedule_status: str
+    retry_count: int
+    max_retries: int
+    next_attempt_at: datetime | None
+    last_attempt_at: datetime | None
+    canceled_at: datetime | None
     created_at: datetime
     updated_at: datetime
+
+
+class PublishRescheduleRequest(BaseModel):
+    scheduled_at: datetime
+
+
+class PublishScheduleSummary(BaseModel):
+    days: int
+    total: int
+    scheduled: int
+    ready: int
+    running: int
+    completed: int
+    failed: int
+    canceled: int
+    jobs: list[PublishJobSummary]

@@ -248,6 +248,7 @@ def _handle_authorization_removed(
     ).all()
     for job in active_posts:
         job.status = "FAILED"
+        job.schedule_status = "FAILED"
         job.fail_reason = "authorization.removed"
         job.updated_at = now
 
@@ -284,12 +285,16 @@ def _handle_publish_event(
     for job in jobs:
         if event_type == "post.publish.failed":
             job.status = "FAILED"
+            if isinstance(job, TikTokPublishJob):
+                job.schedule_status = "FAILED"
             job.fail_reason = str(reason or "TikTok publishing failed")
         elif event_type == "post.publish.inbox_delivered":
             if isinstance(job, TikTokDraftJob):
                 job.status = "SEND_TO_USER_INBOX"
         elif event_type == "post.publish.complete":
             job.status = "PUBLISH_COMPLETE"
+            if isinstance(job, TikTokPublishJob):
+                job.schedule_status = "COMPLETED"
         elif event_type == "post.publish.publicly_available":
             ids = _json_ids(job.public_post_ids)
             if post_id is not None:

@@ -32,6 +32,12 @@ else
   printf "%-12s %s\n" "TokenWorker" "DOWN"
 fi
 
+if [[ -f "$ROOT/runtime/scheduler-worker.pid" ]] && kill -0 "$(cat "$ROOT/runtime/scheduler-worker.pid")" 2>/dev/null; then
+  printf "%-14s %s\n" "SchedulerWorker" "UP"
+else
+  printf "%-14s %s\n" "SchedulerWorker" "DOWN"
+fi
+
 if [[ -f "$ROOT/runtime/webhook-worker.pid" ]] && kill -0 "$(cat "$ROOT/runtime/webhook-worker.pid")" 2>/dev/null; then
   printf "%-14s %s\n" "WebhookWorker" "UP"
 else

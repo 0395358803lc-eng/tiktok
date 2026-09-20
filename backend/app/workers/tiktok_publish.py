@@ -1,7 +1,7 @@
 import json
 import logging
 import time
-from datetime import UTC, datetime
+from datetime import UTC, datetime, timedelta
 
 import httpx
 from sqlalchemy import select
@@ -28,7 +28,7 @@ from app.services.tiktok.direct_posts import (
 configure_logging()
 logger = logging.getLogger("tiktok-publish-worker")
 
-TERMINAL_STATUSES = {"PUBLISH_COMPLETE", "FAILED"}
+TERMINAL_STATUSES = {"PUBLISH_COMPLETE", "FAILED", "CANCELED"}
 
 
 def _options(job: TikTokPublishJob) -> DirectPostOptions:
@@ -50,9 +50,12 @@ def _options(job: TikTokPublishJob) -> DirectPostOptions:
 
 
 def _fail_job(db, job: TikTokPublishJob, reason: str) -> None:
+    now = datetime.now(UTC)
     job.status = "FAILED"
+    job.schedule_status = "FAILED"
     job.fail_reason = reason[:1000]
-    job.updated_at = datetime.now(UTC)
+    job.next_attempt_at = None
+    job.updated_at = now
     db.commit()
     record_audit(
         db,
@@ -63,14 +66,63 @@ def _fail_job(db, job: TikTokPublishJob, reason: str) -> None:
     )
 
 
+def _schedule_retry(db, job: TikTokPublishJob, reason: str) -> None:
+    settings = get_settings()
+    if job.publish_id is not None or job.retry_count >= job.max_retries:
+        _fail_job(db, job, reason)
+        return
+
+    job.retry_count += 1
+    delay_seconds = min(
+        settings.publish_retry_base_seconds * (2 ** (job.retry_count - 1)),
+        3600,
+    )
+    now = datetime.now(UTC)
+    job.status = "QUEUED"
+    job.schedule_status = "SCHEDULED"
+    job.next_attempt_at = now + timedelta(seconds=delay_seconds)
+    job.fail_reason = f"Retry scheduled after transient error: {reason[:800]}"
+    job.updated_at = now
+    db.commit()
+    record_audit(
+        db,
+        event_type="DIRECT_POST_RETRY_SCHEDULED",
+        account_id=job.account_id,
+        status="WARNING",
+        detail=(
+            f"Direct Post job id={job.id} retry={job.retry_count}/"
+            f"{job.max_retries} after {delay_seconds}s"
+        ),
+    )
+
+
 def _submit_job(db, job: TikTokPublishJob) -> bool:
     account = db.get(TikTokAccount, job.account_id)
     if account is None or account.status != "CONNECTED":
         _fail_job(db, job, "TikTok account is not connected")
         return False
 
+    now = datetime.now(UTC)
+    job.schedule_status = "RUNNING"
+    job.last_attempt_at = now
+    job.updated_at = now
+    db.commit()
+
     try:
         info = query_creator_info(account)
+    except httpx.RequestError as exc:
+        _schedule_retry(db, job, str(exc))
+        logger.warning(
+            "Creator Info network failure job_id=%s retry_count=%s",
+            job.id,
+            job.retry_count,
+        )
+        return False
+    except (TikTokPublishScopeError, TikTokAPIError) as exc:
+        _fail_job(db, job, str(exc))
+        return False
+
+    try:
         options = _options(job)
         job.creator_info_json = json.dumps(
             {
@@ -86,6 +138,7 @@ def _submit_job(db, job: TikTokPublishJob) -> bool:
             separators=(",", ":"),
         )
         job.status = "INITIALIZING"
+        job.next_attempt_at = None
         job.updated_at = datetime.now(UTC)
         db.commit()
 
@@ -183,6 +236,10 @@ def _poll_job(db, job: TikTokPublishJob) -> bool:
 
     previous = job.status
     job.status = remote.status
+    if remote.status == "PUBLISH_COMPLETE":
+        job.schedule_status = "COMPLETED"
+    elif remote.status == "FAILED":
+        job.schedule_status = "FAILED"
     job.fail_reason = remote.fail_reason
     job.uploaded_bytes = remote.uploaded_bytes or job.uploaded_bytes
     job.downloaded_bytes = remote.downloaded_bytes
@@ -211,7 +268,10 @@ def run_once() -> tuple[int, int]:
     with SessionLocal() as db:
         queued = db.scalars(
             select(TikTokPublishJob)
-            .where(TikTokPublishJob.status == "QUEUED")
+            .where(
+                TikTokPublishJob.status == "QUEUED",
+                TikTokPublishJob.schedule_status == "READY",
+            )
             .order_by(TikTokPublishJob.id.asc())
             .limit(5)
         ).all()
@@ -224,6 +284,7 @@ def run_once() -> tuple[int, int]:
             .where(
                 TikTokPublishJob.publish_id.is_not(None),
                 TikTokPublishJob.status.not_in(TERMINAL_STATUSES),
+                TikTokPublishJob.schedule_status == "RUNNING",
             )
             .order_by(TikTokPublishJob.id.asc())
             .limit(50)
