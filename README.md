@@ -219,3 +219,28 @@ Runtime configuration:
 - `MEDIA_ROOT=runtime/media`
 - `MEDIA_MAX_VIDEO_BYTES=4294967296`
 - `DRAFT_WORKER_INTERVAL_SECONDS=30`
+
+
+## Direct Post Studio
+
+The Content Posting API Direct Post workflow is implemented for the `video.publish` scope.
+
+The Direct Post screen queries TikTok Creator Info and uses the returned privacy and
+interaction settings. The backend and PublishWorker re-query Creator Info before submission
+so a stale or modified frontend cannot bypass current TikTok creator restrictions.
+
+Supported Direct Post media:
+
+- Local MP4/MOV/WebM video through FILE_UPLOAD.
+- Photo posts using 1–35 verified HTTPS image URLs through PULL_FROM_URL.
+
+The UI requires manual privacy selection, explicit interaction choices, commercial-content
+disclosure, and TikTok posting consent. PublishWorker persists `publish_id`, processing
+state, failure reason, and public post IDs.
+
+Runtime configuration:
+
+- `PUBLISH_WORKER_INTERVAL_SECONDS=30`
+
+A connected account must actually grant `video.publish` before Creator Info or Direct Post
+operations are allowed.

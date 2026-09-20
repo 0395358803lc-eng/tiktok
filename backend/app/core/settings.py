@@ -40,6 +40,7 @@ class Settings(BaseSettings):
     media_root: str = "runtime/media"
     media_max_video_bytes: int = 4294967296
     draft_worker_interval_seconds: int = 30
+    publish_worker_interval_seconds: int = 30
 
     @property
     def active_tiktok_client_key(self) -> str | None:

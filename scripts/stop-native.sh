@@ -3,7 +3,7 @@ set -euo pipefail
 ROOT="$(cd "$(dirname "$0")/.." && pwd)"
 RUNTIME="$ROOT/.runtime"
 
-for name in watchdog frontend draft-worker analytics-worker token-worker backend; do
+for name in watchdog frontend publish-worker draft-worker analytics-worker token-worker backend; do
   pidfile="$ROOT/runtime/$name.pid"
   if [[ -f "$pidfile" ]]; then
     pid="$(cat "$pidfile")"

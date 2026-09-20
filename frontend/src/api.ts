@@ -121,6 +121,7 @@ export type MediaAsset = {
   mime_type: string;
   size_bytes: number;
   sha256: string;
+  duration_seconds?: number | null;
   created_at: string;
 };
 
@@ -132,6 +133,44 @@ export type DraftJob = {
   source_type: string;
   title?: string | null;
   description?: string | null;
+  publish_id?: string | null;
+  status: string;
+  fail_reason?: string | null;
+  uploaded_bytes?: number | null;
+  downloaded_bytes?: number | null;
+  public_post_ids: string[];
+  created_at: string;
+  updated_at: string;
+};
+
+export type CreatorInfo = {
+  creator_avatar_url?: string | null;
+  creator_username?: string | null;
+  creator_nickname?: string | null;
+  privacy_level_options: string[];
+  comment_disabled: boolean;
+  duet_disabled: boolean;
+  stitch_disabled: boolean;
+  max_video_post_duration_sec?: number | null;
+};
+
+export type PublishJob = {
+  id: number;
+  account_id: number;
+  media_asset_id?: number | null;
+  media_type: string;
+  source_type: string;
+  title?: string | null;
+  description?: string | null;
+  privacy_level: string;
+  disable_comment: boolean;
+  disable_duet: boolean;
+  disable_stitch: boolean;
+  auto_add_music: boolean;
+  brand_content_toggle: boolean;
+  brand_organic_toggle: boolean;
+  is_aigc: boolean;
+  video_cover_timestamp_ms?: number | null;
   publish_id?: string | null;
   status: string;
   fail_reason?: string | null;
@@ -196,11 +235,68 @@ export const api = {
   tiktokConfig: () => json<TikTokConfigStatus>("/api/tiktok/config"),
   tiktokAccounts: () => json<TikTokAccount[]>("/api/tiktok/accounts"),
   mediaAssets: () => json<MediaAsset[]>("/api/tiktok/media"),
-  uploadVideoMedia: (file: File) => {
+  uploadVideoMedia: (file: File, durationSeconds?: number) => {
     const data = new FormData();
     data.append("file", file);
+    if (typeof durationSeconds === "number") {
+      data.append("duration_seconds", String(durationSeconds));
+    }
     return multipart<MediaAsset>("/api/tiktok/media/video", data);
   },
+  creatorInfo: (accountId: number) =>
+    json<CreatorInfo>("/api/tiktok/accounts/" + accountId + "/creator-info", {
+      method: "POST",
+    }),
+  publishJobs: (accountId?: number) =>
+    json<PublishJob[]>(
+      "/api/tiktok/publish-jobs" + (accountId ? "?account_id=" + accountId : "")
+    ),
+  createVideoPublish: (
+    accountId: number,
+    input: {
+      media_asset_id: number;
+      privacy_level: string;
+      title?: string;
+      allow_comment: boolean;
+      allow_duet: boolean;
+      allow_stitch: boolean;
+      brand_content_toggle: boolean;
+      brand_organic_toggle: boolean;
+      is_aigc: boolean;
+      video_cover_timestamp_ms?: number;
+      consent_music_usage: boolean;
+      consent_branded_policy: boolean;
+    },
+  ) =>
+    json<PublishJob>("/api/tiktok/accounts/" + accountId + "/publish/video", {
+      method: "POST",
+      body: JSON.stringify(input),
+    }),
+  createPhotoPublish: (
+    accountId: number,
+    input: {
+      photo_urls: string[];
+      cover_index: number;
+      title?: string;
+      description?: string;
+      privacy_level: string;
+      allow_comment: boolean;
+      auto_add_music: boolean;
+      brand_content_toggle: boolean;
+      brand_organic_toggle: boolean;
+      is_aigc: boolean;
+      consent_music_usage: boolean;
+      consent_branded_policy: boolean;
+    },
+  ) =>
+    json<PublishJob>("/api/tiktok/accounts/" + accountId + "/publish/photo", {
+      method: "POST",
+      body: JSON.stringify(input),
+    }),
+  refreshPublishJob: (jobId: number) =>
+    json<PublishJob>("/api/tiktok/publish-jobs/" + jobId + "/refresh", {
+      method: "POST",
+    }),
   draftJobs: (accountId?: number) =>
     json<DraftJob[]>(`/api/tiktok/drafts${accountId ? `?account_id=${accountId}` : ""}`),
   createVideoDraft: (accountId: number, mediaAssetId: number) =>

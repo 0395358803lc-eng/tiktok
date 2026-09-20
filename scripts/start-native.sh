@@ -39,6 +39,12 @@ if [[ ! -f "$ROOT/runtime/draft-worker.pid" ]] || ! kill -0 "$(cat "$ROOT/runtim
   echo $! > "$ROOT/runtime/draft-worker.pid"
 fi
 
+if [[ ! -f "$ROOT/runtime/publish-worker.pid" ]] || ! kill -0 "$(cat "$ROOT/runtime/publish-worker.pid")" 2>/dev/null; then
+  cd "$ROOT/backend"
+  nohup "$ROOT/.venv/bin/python" -m app.workers.tiktok_publish     > "$ROOT/logs/publish-worker.log" 2>&1 &
+  echo $! > "$ROOT/runtime/publish-worker.pid"
+fi
+
 if [[ ! -f "$ROOT/runtime/frontend.pid" ]] || ! kill -0 "$(cat "$ROOT/runtime/frontend.pid")" 2>/dev/null; then
   cd "$ROOT/frontend"
   nohup "$ROOT/frontend/node_modules/.bin/vite" preview --host 0.0.0.0 --port 15173 --strictPort     > "$ROOT/logs/frontend.log" 2>&1 &

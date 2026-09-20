@@ -5,6 +5,18 @@ from app.models.media_asset import MediaAsset
 from app.models.oauth_session import OAuthSession
 from app.models.tiktok_account import TikTokAccount
 from app.models.tiktok_draft_job import TikTokDraftJob
+from app.models.tiktok_publish_job import TikTokPublishJob
 from app.models.tiktok_video import TikTokVideo
 
-__all__ = ['AccountStatSnapshot', 'AdminSession', 'AuditEvent', 'MediaAsset', 'OAuthSession', 'TikTokAccount', 'TikTokDraftJob', 'TikTokVideo', 'VideoMetricSnapshot']
+__all__ = [
+    "AccountStatSnapshot",
+    "AdminSession",
+    "AuditEvent",
+    "MediaAsset",
+    "OAuthSession",
+    "TikTokAccount",
+    "TikTokDraftJob",
+    "TikTokPublishJob",
+    "TikTokVideo",
+    "VideoMetricSnapshot",
+]

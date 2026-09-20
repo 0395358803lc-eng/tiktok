@@ -1,4 +1,5 @@
 import hashlib
+import math
 from datetime import UTC, datetime
 from pathlib import Path
 from uuid import uuid4
@@ -30,12 +31,21 @@ def media_root() -> Path:
     return path
 
 
-async def save_video_upload(db: Session, upload: UploadFile) -> MediaAsset:
+async def save_video_upload(
+    db: Session,
+    upload: UploadFile,
+    *,
+    duration_seconds: float | None = None,
+) -> MediaAsset:
     settings = get_settings()
     mime = (upload.content_type or "").lower()
     suffix = ALLOWED_VIDEO_MIME.get(mime)
     if suffix is None:
         raise MediaValidationError("Supported video types are MP4, MOV, and WebM")
+    if duration_seconds is not None and (
+        not math.isfinite(duration_seconds) or duration_seconds <= 0
+    ):
+        raise MediaValidationError("Video duration metadata must be a positive finite value")
 
     stored_name = f"{uuid4().hex}{suffix}"
     target = media_root() / stored_name
@@ -71,6 +81,7 @@ async def save_video_upload(db: Session, upload: UploadFile) -> MediaAsset:
         mime_type=mime,
         size_bytes=size,
         sha256=digest.hexdigest(),
+        duration_seconds=duration_seconds,
         created_at=datetime.now(UTC),
     )
     db.add(asset)

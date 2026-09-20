@@ -1,6 +1,7 @@
 import { FormEvent, useEffect, useMemo, useState } from "react";
 
 import { api, DraftJob, MediaAsset, TikTokAccount } from "./api";
+import { readVideoDuration } from "./media";
 
 type Props = {
   accounts: TikTokAccount[];
@@ -80,7 +81,8 @@ export default function DraftUploadPanel({ accounts }: Props) {
     setError("");
     setNotice("");
     try {
-      const asset = await api.uploadVideoMedia(file);
+      const duration = await readVideoDuration(file);
+      const asset = await api.uploadVideoMedia(file, duration);
       await loadAssets();
       setSelectedAsset(asset.id);
       form.reset();

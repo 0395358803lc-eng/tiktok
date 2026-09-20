@@ -20,6 +20,10 @@ MAX_CHUNK = 64 * 1024 * 1024
 MAX_FINAL_CHUNK = 128 * 1024 * 1024
 
 
+def _utf16_units(value: str) -> int:
+    return len(value.encode("utf-16-le")) // 2
+
+
 class TikTokDraftScopeError(RuntimeError):
     pass
 
@@ -150,9 +154,9 @@ def validate_photo_request(
         raise TikTokDraftValidationError("Photo drafts require between 1 and 35 image URLs")
     if cover_index < 0 or cover_index >= len(photo_urls):
         raise TikTokDraftValidationError("Photo cover index is outside the image list")
-    if title and len(title) > 90:
+    if title and _utf16_units(title) > 90:
         raise TikTokDraftValidationError("Photo title exceeds 90 characters")
-    if description and len(description) > 4000:
+    if description and _utf16_units(description) > 4000:
         raise TikTokDraftValidationError("Photo description exceeds 4000 characters")
     for url in photo_urls:
         parsed = urlparse(url)
