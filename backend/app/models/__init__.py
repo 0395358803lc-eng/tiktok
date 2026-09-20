@@ -7,6 +7,7 @@ from app.models.tiktok_account import TikTokAccount
 from app.models.tiktok_draft_job import TikTokDraftJob
 from app.models.tiktok_publish_job import TikTokPublishJob
 from app.models.tiktok_video import TikTokVideo
+from app.models.tiktok_webhook_event import TikTokWebhookEvent
 
 __all__ = [
     "AccountStatSnapshot",
@@ -18,5 +19,6 @@ __all__ = [
     "TikTokDraftJob",
     "TikTokPublishJob",
     "TikTokVideo",
+    "TikTokWebhookEvent",
     "VideoMetricSnapshot",
 ]

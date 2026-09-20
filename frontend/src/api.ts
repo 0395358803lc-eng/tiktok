@@ -181,6 +181,18 @@ export type PublishJob = {
   updated_at: string;
 };
 
+export type WebhookEvent = {
+  id: number;
+  event_type: string;
+  user_open_id?: string | null;
+  event_created_at?: string | null;
+  status: string;
+  attempts: number;
+  error_detail?: string | null;
+  received_at: string;
+  processed_at?: string | null;
+};
+
 export type AuditEvent = {
   id: number;
   event_type: string;
@@ -321,6 +333,8 @@ export const api = {
   refreshDraft: (jobId: number) =>
     json<DraftJob>(`/api/tiktok/drafts/${jobId}/refresh`, { method: "POST" }),
   auditEvents: (limit = 50) => json<AuditEvent[]>(`/api/audit/events?limit=${limit}`),
+  webhookEvents: (limit = 100) =>
+    json<WebhookEvent[]>(`/api/tiktok/webhook-events?limit=${limit}`),
   startTikTokOAuth: (scopes?: string[]) =>
     json<OAuthStart>("/api/tiktok/oauth/start", {
       method: "POST",

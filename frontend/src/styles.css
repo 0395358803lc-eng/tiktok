@@ -1425,3 +1425,126 @@ button:disabled {
     grid-template-columns: repeat(2, 1fr);
   }
 }
+
+.webhook-panel {
+  margin-top: 16px;
+}
+
+.webhook-config-card {
+  display: grid;
+  grid-template-columns: minmax(0, 1fr) auto;
+  gap: 16px;
+  align-items: center;
+  margin: 18px 0;
+  padding: 16px;
+  border: 1px solid rgba(148, 163, 184, .14);
+  border-radius: 16px;
+  background: rgba(8, 15, 27, .55);
+}
+
+.webhook-config-card > div {
+  display: grid;
+  gap: 6px;
+}
+
+.webhook-config-card code {
+  display: block;
+  overflow-wrap: anywhere;
+  color: #93c5fd;
+}
+
+.webhook-config-card span {
+  color: #94a3b8;
+  font-size: 12px;
+}
+
+.webhook-security-grid {
+  display: grid;
+  grid-template-columns: repeat(4, minmax(0, 1fr));
+  gap: 10px;
+  margin-bottom: 18px;
+}
+
+.webhook-security-grid > div {
+  display: grid;
+  gap: 5px;
+  border: 1px solid rgba(148, 163, 184, .12);
+  border-radius: 12px;
+  padding: 12px;
+  background: rgba(15, 23, 42, .48);
+}
+
+.webhook-security-grid span {
+  color: #94a3b8;
+  font-size: 11px;
+}
+
+.webhook-event-list {
+  display: grid;
+  gap: 8px;
+}
+
+.webhook-event-row {
+  display: grid;
+  grid-template-columns: minmax(0, 1fr) auto;
+  gap: 14px;
+  align-items: center;
+  padding: 13px 0;
+  border-top: 1px solid rgba(148, 163, 184, .12);
+}
+
+.webhook-event-row:first-child {
+  border-top: 0;
+}
+
+.webhook-event-row > div:first-child {
+  display: grid;
+  gap: 4px;
+}
+
+.webhook-event-row span {
+  color: #94a3b8;
+  font-size: 12px;
+}
+
+.webhook-event-meta {
+  display: flex;
+  gap: 8px;
+  flex-wrap: wrap;
+  align-items: center;
+  justify-content: flex-end;
+}
+
+.webhook-status {
+  border: 1px solid rgba(148, 163, 184, .2);
+  border-radius: 999px;
+  padding: 5px 8px;
+  font-size: 10px !important;
+  font-weight: 700;
+}
+
+.webhook-status.status-processed {
+  color: #86efac !important;
+  border-color: rgba(34, 197, 94, .35);
+}
+
+.webhook-status.status-error {
+  color: #fca5a5 !important;
+  border-color: rgba(239, 68, 68, .35);
+}
+
+.webhook-status.status-pending {
+  color: #fde68a !important;
+  border-color: rgba(234, 179, 8, .35);
+}
+
+@media (max-width: 900px) {
+  .webhook-security-grid { grid-template-columns: repeat(2, minmax(0, 1fr)); }
+  .webhook-event-row { grid-template-columns: 1fr; }
+  .webhook-event-meta { justify-content: flex-start; }
+}
+
+@media (max-width: 560px) {
+  .webhook-config-card { grid-template-columns: 1fr; }
+  .webhook-security-grid { grid-template-columns: 1fr; }
+}

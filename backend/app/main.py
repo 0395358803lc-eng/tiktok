@@ -6,7 +6,7 @@ from fastapi import FastAPI, Request
 from fastapi.middleware.cors import CORSMiddleware
 from fastapi.responses import JSONResponse
 
-from app.api import analytics, audit, auth, health, publishing, tiktok
+from app.api import analytics, audit, auth, health, publishing, tiktok, webhooks
 from app.core.logging import configure_logging
 from app.core.settings import get_settings
 
@@ -54,3 +54,4 @@ app.include_router(tiktok.router, prefix="/api")
 app.include_router(audit.router, prefix="/api")
 app.include_router(analytics.router, prefix="/api")
 app.include_router(publishing.router, prefix="/api")
+app.include_router(webhooks.router, prefix="/api")

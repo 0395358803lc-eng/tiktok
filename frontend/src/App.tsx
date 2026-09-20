@@ -4,6 +4,7 @@ import AnalyticsPanel from "./AnalyticsPanel";
 import DirectPostPanel from "./DirectPostPanel";
 import DraftUploadPanel from "./DraftUploadPanel";
 import VideoLibrary from "./VideoLibrary";
+import WebhookPanel from "./WebhookPanel";
 
 import {
   api,
@@ -451,6 +452,8 @@ export default function App() {
           <DirectPostPanel accounts={accounts} />
 
           <VideoLibrary accounts={accounts} />
+
+          <WebhookPanel />
 
           <section className="panel audit-panel">
             <div className="section-head">

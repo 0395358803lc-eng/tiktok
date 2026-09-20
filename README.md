@@ -244,3 +244,23 @@ Runtime configuration:
 
 A connected account must actually grant `video.publish` before Creator Info or Direct Post
 operations are allowed.
+
+
+## TikTok Webhooks
+
+The application exposes a signed webhook callback at:
+
+- `POST /api/tiktok/webhooks`
+
+Webhook requests are verified with TikTok's HMAC-SHA256 signature, checked against a
+replay-time window, deduplicated with a SHA-256 body digest, and persisted before async
+processing. WebhookWorker updates account authorization and Content Posting job state.
+
+Admin history is available from:
+
+- `GET /api/tiktok/webhook-events`
+
+Runtime configuration:
+
+- `WEBHOOK_SIGNATURE_TOLERANCE_SECONDS=300`
+- `WEBHOOK_WORKER_INTERVAL_SECONDS=5`
