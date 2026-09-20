@@ -40,5 +40,10 @@ if [[ ! -f "$ROOT/runtime/ngrok/ngrok.pid" ]] || ! kill -0 "$(cat "$ROOT/runtime
   echo $! > "$ROOT/runtime/ngrok/ngrok.pid"
 fi
 
-sleep 2
+if [[ ! -f "$ROOT/runtime/watchdog.pid" ]] || ! kill -0 "$(cat "$ROOT/runtime/watchdog.pid")" 2>/dev/null; then
+  nohup "$ROOT/scripts/watchdog.sh" > /dev/null 2>&1 &
+  echo $! > "$ROOT/runtime/watchdog.pid"
+fi
+
+sleep 3
 "$ROOT/scripts/status-native.sh"

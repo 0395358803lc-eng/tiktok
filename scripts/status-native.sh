@@ -37,3 +37,16 @@ if [[ -f "$ROOT/runtime/ngrok/ngrok.pid" ]] && kill -0 "$(cat "$ROOT/runtime/ngr
 else
   printf "%-12s %s\n" "Ngrok" "DOWN"
 fi
+
+if [[ -f "$ROOT/runtime/watchdog.pid" ]] && kill -0 "$(cat "$ROOT/runtime/watchdog.pid")" 2>/dev/null; then
+  printf "%-12s %s\n" "Watchdog" "UP"
+else
+  printf "%-12s %s\n" "Watchdog" "DOWN"
+fi
+
+latest_backup="$(find "$ROOT/runtime/backups" -maxdepth 1 -type f -name 'th_tiktok_*.dump' -printf '%T@ %f\n' 2>/dev/null | sort -nr | head -1 | cut -d' ' -f2- || true)"
+if [[ -n "$latest_backup" ]]; then
+  printf "%-12s %s\n" "Backup" "$latest_backup"
+else
+  printf "%-12s %s\n" "Backup" "NONE"
+fi
