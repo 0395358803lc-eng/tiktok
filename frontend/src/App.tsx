@@ -18,6 +18,8 @@ export default function App() {
   const [accounts, setAccounts] = useState<TikTokAccount[]>([]);
   const [oauthNotice, setOauthNotice] = useState("");
   const [actionBusy, setActionBusy] = useState(false);
+  const [accountQuery, setAccountQuery] = useState("");
+  const [statusFilter, setStatusFilter] = useState("ALL");
 
   async function refreshFoundation() {
     const [meResult, healthResult, readyResult] = await Promise.allSettled([
@@ -129,6 +131,18 @@ export default function App() {
   }
 
 
+  const normalizedQuery = accountQuery.trim().toLowerCase();
+  const filteredAccounts = accounts.filter((account) => {
+    const matchesStatus = statusFilter === "ALL" || account.status === statusFilter;
+    const matchesQuery = !normalizedQuery ||
+      account.open_id.toLowerCase().includes(normalizedQuery) ||
+      (account.display_name || "").toLowerCase().includes(normalizedQuery);
+    return matchesStatus && matchesQuery;
+  });
+  const connectedCount = accounts.filter((account) => account.status === "CONNECTED").length;
+  const reauthCount = accounts.filter((account) => account.status === "REAUTH_REQUIRED").length;
+  const issueCount = accounts.filter((account) => ["ERROR", "REVOKED"].includes(account.status)).length;
+
   if (loading) {
     return <main className="shell"><section className="panel">Checking services…</section></main>;
   }
@@ -209,6 +223,33 @@ export default function App() {
               </button>
             </div>
 
+            <div className="account-summary-grid">
+              <StatusCard title="Accounts" value={String(accounts.length)} ok={accounts.length > 0} />
+              <StatusCard title="Connected" value={String(connectedCount)} ok={connectedCount > 0} />
+              <StatusCard title="Re-auth" value={String(reauthCount)} ok={reauthCount === 0} />
+              <StatusCard title="Issues" value={String(issueCount)} ok={issueCount === 0} />
+            </div>
+
+            <div className="account-toolbar">
+              <input
+                value={accountQuery}
+                onChange={(event) => setAccountQuery(event.target.value)}
+                placeholder="Search name or open_id"
+                aria-label="Search TikTok accounts"
+              />
+              <select
+                value={statusFilter}
+                onChange={(event) => setStatusFilter(event.target.value)}
+                aria-label="Filter account status"
+              >
+                <option value="ALL">All statuses</option>
+                <option value="CONNECTED">Connected</option>
+                <option value="REAUTH_REQUIRED">Re-auth required</option>
+                <option value="ERROR">Error</option>
+                <option value="REVOKED">Revoked</option>
+              </select>
+            </div>
+
             <div className="config-strip">
               <StatusBadge
                 ok={Boolean(tiktokConfig?.configured)}
@@ -240,7 +281,13 @@ export default function App() {
               </div>
             ) : (
               <div className="accounts-list">
-                {accounts.map((account) => (
+                {filteredAccounts.length === 0 && (
+                  <div className="empty-state">
+                    <strong>No matching accounts.</strong>
+                    <span>Change the search text or status filter.</span>
+                  </div>
+                )}
+                {filteredAccounts.map((account) => (
                   <article className="account-row" key={account.id}>
                     <div className="account-identity">
                       {account.avatar_url ? (
@@ -262,8 +309,22 @@ export default function App() {
                       <span>
                         Access expires {new Date(account.access_token_expires_at).toLocaleString()}
                       </span>
+                      <span>
+                        Profile sync {account.profile_synced_at ? new Date(account.profile_synced_at).toLocaleString() : "not yet"}
+                      </span>
+                      <span>
+                        Token refresh {account.last_token_refresh_at ? new Date(account.last_token_refresh_at).toLocaleString() : "not yet"}
+                      </span>
                     </div>
                     <div className="account-actions">
+                      {account.status !== "CONNECTED" && (
+                        <button
+                          disabled={actionBusy}
+                          onClick={connectTikTok}
+                        >
+                          Reconnect
+                        </button>
+                      )}
                       <button
                         className="ghost"
                         disabled={actionBusy || account.status === "REVOKED"}

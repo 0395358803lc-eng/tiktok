@@ -339,3 +339,31 @@ button:disabled {
   font-size: 12px;
   font-weight: 800;
 }
+
+.account-summary-grid {
+  display: grid;
+  grid-template-columns: repeat(4, 1fr);
+  gap: 10px;
+  margin: 20px 0 14px;
+}
+
+.account-toolbar {
+  display: grid;
+  grid-template-columns: minmax(0, 1fr) 210px;
+  gap: 10px;
+  margin-bottom: 14px;
+}
+
+.account-toolbar select {
+  border: 1px solid #253047;
+  border-radius: 12px;
+  padding: 12px 14px;
+  color: #f8fafc;
+  background: #0b1220;
+  outline: none;
+}
+
+@media (max-width: 800px) {
+  .account-summary-grid { grid-template-columns: repeat(2, 1fr); }
+  .account-toolbar { grid-template-columns: 1fr; }
+}
