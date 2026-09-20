@@ -169,3 +169,21 @@ request a scope that has not been enabled for the current TikTok Developer App.
 
 The User Info client requests fields according to the scopes actually granted to each account,
 so a basic-only account never requests protected profile/statistics fields.
+
+
+## Personal Video Library
+
+The Display API video module is implemented for the `video.list` scope.
+
+Backend routes:
+
+- `GET /api/tiktok/accounts/{id}/videos`
+- `POST /api/tiktok/accounts/{id}/videos/sync`
+- `POST /api/tiktok/accounts/{id}/videos/refresh`
+
+TikTok video metadata is synchronized into PostgreSQL. List pagination is cursor-based and
+uses at most 20 records per TikTok API request. Stored cover URLs can be refreshed through
+the video-query endpoint because TikTok cover-image URLs are temporary.
+
+The backend refuses live sync/refresh operations unless the connected account actually
+granted `video.list`.

@@ -45,6 +45,33 @@ export type TikTokAccount = {
   profile_synced_at?: string | null;
 };
 
+export type TikTokVideo = {
+  id: number;
+  account_id: number;
+  video_id: string;
+  create_time?: string | null;
+  cover_image_url?: string | null;
+  share_url?: string | null;
+  video_description?: string | null;
+  duration?: number | null;
+  height?: number | null;
+  width?: number | null;
+  title?: string | null;
+  embed_link?: string | null;
+  like_count?: number | null;
+  comment_count?: number | null;
+  share_count?: number | null;
+  view_count?: number | null;
+  is_aigc?: boolean | null;
+  synced_at: string;
+};
+
+export type TikTokVideoSyncResult = {
+  synced_count: number;
+  cursor?: number | null;
+  has_more: boolean;
+};
+
 export type AuditEvent = {
   id: number;
   event_type: string;
@@ -94,6 +121,18 @@ export const api = {
     json<TikTokAccount>(`/api/tiktok/accounts/${id}/refresh`, { method: "POST" }),
   syncTikTokProfile: (id: number) =>
     json<TikTokAccount>(`/api/tiktok/accounts/${id}/sync-profile`, { method: "POST" }),
+  tiktokVideos: (id: number, limit = 100, offset = 0) =>
+    json<TikTokVideo[]>(`/api/tiktok/accounts/${id}/videos?limit=${limit}&offset=${offset}`),
+  syncTikTokVideos: (id: number, cursor?: number | null, maxCount = 20) =>
+    json<TikTokVideoSyncResult>(`/api/tiktok/accounts/${id}/videos/sync`, {
+      method: "POST",
+      body: JSON.stringify({ cursor: cursor ?? null, max_count: maxCount }),
+    }),
+  refreshTikTokVideos: (id: number, videoIds: string[]) =>
+    json<TikTokVideo[]>(`/api/tiktok/accounts/${id}/videos/refresh`, {
+      method: "POST",
+      body: JSON.stringify({ video_ids: videoIds }),
+    }),
   disconnectTikTokAccount: (id: number) =>
     json<TikTokAccount>(`/api/tiktok/accounts/${id}/disconnect`, { method: "POST" }),
 };

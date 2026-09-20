@@ -1,5 +1,7 @@
 import { FormEvent, useEffect, useState } from "react";
 
+import VideoLibrary from "./VideoLibrary";
+
 import {
   api,
   AuditEvent,
@@ -438,6 +440,8 @@ export default function App() {
               </div>
             )}
           </section>
+
+          <VideoLibrary accounts={accounts} />
 
           <section className="panel audit-panel">
             <div className="section-head">

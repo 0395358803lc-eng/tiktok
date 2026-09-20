@@ -5,8 +5,9 @@ from app.core.settings import Settings
 BASIC_SCOPE = "user.info.basic"
 PROFILE_SCOPE = "user.info.profile"
 STATS_SCOPE = "user.info.stats"
+VIDEO_LIST_SCOPE = "video.list"
 
-PERSONAL_SCOPES = (BASIC_SCOPE, PROFILE_SCOPE, STATS_SCOPE)
+PERSONAL_SCOPES = (BASIC_SCOPE, PROFILE_SCOPE, STATS_SCOPE, VIDEO_LIST_SCOPE)
 
 BASIC_FIELDS = ("open_id", "union_id", "avatar_url", "display_name")
 PROFILE_FIELDS = ("username", "bio_description", "profile_deep_link", "is_verified")
@@ -35,6 +36,11 @@ SCOPE_CATALOG = (
         scope=STATS_SCOPE,
         label="Profile statistics",
         description="Follower, following, likes and public video counts.",
+    ),
+    ScopeCapability(
+        scope=VIDEO_LIST_SCOPE,
+        label="Video library",
+        description="Read the authorized account's public video metadata and metrics.",
     ),
 )
 

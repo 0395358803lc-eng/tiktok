@@ -12,12 +12,17 @@ from app.core.settings import get_settings
 from app.models.admin_session import AdminSession
 from app.models.oauth_session import OAuthSession
 from app.models.tiktok_account import TikTokAccount
+from app.models.tiktok_video import TikTokVideo
 from app.schemas.tiktok import (
     OAuthStartRequest,
     OAuthStartResponse,
     TikTokAccountSummary,
     TikTokConfigStatus,
     TikTokScopeCapability,
+    TikTokVideoRefreshRequest,
+    TikTokVideoSummary,
+    TikTokVideoSyncRequest,
+    TikTokVideoSyncResponse,
 )
 from app.services.audit import record_audit
 from app.services.tiktok.client import (
@@ -38,6 +43,11 @@ from app.services.tiktok.tokens import (
     TikTokConfigurationError,
     TikTokIdentityError,
     refresh_account_tokens,
+)
+from app.services.tiktok.videos import (
+    TikTokVideoScopeError,
+    refresh_video_metadata,
+    sync_video_page,
 )
 
 router = APIRouter(prefix="/tiktok", tags=["tiktok"])
@@ -69,6 +79,29 @@ def _account_summary(account: TikTokAccount) -> TikTokAccountSummary:
         refresh_token_expires_at=account.refresh_token_expires_at,
         last_token_refresh_at=account.last_token_refresh_at,
         profile_synced_at=account.profile_synced_at,
+    )
+
+
+def _video_summary(video: TikTokVideo) -> TikTokVideoSummary:
+    return TikTokVideoSummary(
+        id=video.id,
+        account_id=video.account_id,
+        video_id=video.video_id,
+        create_time=video.create_time,
+        cover_image_url=video.cover_image_url,
+        share_url=video.share_url,
+        video_description=video.video_description,
+        duration=video.duration,
+        height=video.height,
+        width=video.width,
+        title=video.title,
+        embed_link=video.embed_link,
+        like_count=video.like_count,
+        comment_count=video.comment_count,
+        share_count=video.share_count,
+        view_count=video.view_count,
+        is_aigc=video.is_aigc,
+        synced_at=video.synced_at,
     )
 
 
@@ -315,6 +348,106 @@ def sync_profile(account_id: int, _: Admin, db: DbSession):
         raise HTTPException(status_code=502, detail="TikTok user-info endpoint unavailable") from exc
 
     return _account_summary(account)
+
+
+@router.get(
+    "/accounts/{account_id}/videos",
+    response_model=list[TikTokVideoSummary],
+)
+def list_account_videos(
+    account_id: int,
+    _: Admin,
+    db: DbSession,
+    limit: int = Query(default=50, ge=1, le=200),
+    offset: int = Query(default=0, ge=0),
+):
+    account = db.get(TikTokAccount, account_id)
+    if account is None:
+        raise HTTPException(status_code=404, detail="TikTok account not found")
+
+    rows = db.scalars(
+        select(TikTokVideo)
+        .where(TikTokVideo.account_id == account_id)
+        .order_by(TikTokVideo.create_time.desc().nullslast(), TikTokVideo.id.desc())
+        .offset(offset)
+        .limit(limit)
+    ).all()
+    return [_video_summary(row) for row in rows]
+
+
+@router.post(
+    "/accounts/{account_id}/videos/sync",
+    response_model=TikTokVideoSyncResponse,
+)
+def sync_account_videos(
+    account_id: int,
+    payload: TikTokVideoSyncRequest,
+    _: Admin,
+    db: DbSession,
+):
+    account = db.get(TikTokAccount, account_id)
+    if account is None:
+        raise HTTPException(status_code=404, detail="TikTok account not found")
+    if account.status != "CONNECTED":
+        raise HTTPException(status_code=409, detail="TikTok account is not connected")
+    if payload.max_count < 1 or payload.max_count > 20:
+        raise HTTPException(status_code=400, detail="max_count must be between 1 and 20")
+
+    try:
+        page = sync_video_page(
+            db,
+            account,
+            cursor=payload.cursor,
+            max_count=payload.max_count,
+        )
+    except TikTokVideoScopeError as exc:
+        raise HTTPException(status_code=409, detail=str(exc)) from exc
+    except TikTokAPIError as exc:
+        raise HTTPException(status_code=409, detail=str(exc)) from exc
+    except httpx.RequestError as exc:
+        raise HTTPException(status_code=502, detail="TikTok video-list endpoint unavailable") from exc
+
+    return TikTokVideoSyncResponse(
+        synced_count=len(page.videos),
+        cursor=page.cursor,
+        has_more=page.has_more,
+    )
+
+
+@router.post(
+    "/accounts/{account_id}/videos/refresh",
+    response_model=list[TikTokVideoSummary],
+)
+def refresh_account_videos(
+    account_id: int,
+    payload: TikTokVideoRefreshRequest,
+    _: Admin,
+    db: DbSession,
+):
+    account = db.get(TikTokAccount, account_id)
+    if account is None:
+        raise HTTPException(status_code=404, detail="TikTok account not found")
+    if not payload.video_ids:
+        return []
+    if len(payload.video_ids) > 20:
+        raise HTTPException(status_code=400, detail="At most 20 video IDs can be refreshed")
+
+    try:
+        refresh_video_metadata(db, account, video_ids=payload.video_ids)
+    except TikTokVideoScopeError as exc:
+        raise HTTPException(status_code=409, detail=str(exc)) from exc
+    except TikTokAPIError as exc:
+        raise HTTPException(status_code=409, detail=str(exc)) from exc
+    except (httpx.RequestError, ValueError) as exc:
+        raise HTTPException(status_code=502, detail="TikTok video-query endpoint unavailable") from exc
+
+    rows = db.scalars(
+        select(TikTokVideo).where(
+            TikTokVideo.account_id == account_id,
+            TikTokVideo.video_id.in_(payload.video_ids),
+        )
+    ).all()
+    return [_video_summary(row) for row in rows]
 
 
 @router.post("/accounts/{account_id}/disconnect", response_model=TikTokAccountSummary)

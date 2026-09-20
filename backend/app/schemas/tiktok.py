@@ -46,3 +46,39 @@ class TikTokAccountSummary(BaseModel):
     refresh_token_expires_at: datetime
     last_token_refresh_at: datetime | None
     profile_synced_at: datetime | None
+
+
+class TikTokVideoSummary(BaseModel):
+    id: int
+    account_id: int
+    video_id: str
+    create_time: datetime | None
+    cover_image_url: str | None
+    share_url: str | None
+    video_description: str | None
+    duration: int | None
+    height: int | None
+    width: int | None
+    title: str | None
+    embed_link: str | None
+    like_count: int | None
+    comment_count: int | None
+    share_count: int | None
+    view_count: int | None
+    is_aigc: bool | None
+    synced_at: datetime
+
+
+class TikTokVideoSyncRequest(BaseModel):
+    cursor: int | None = None
+    max_count: int = 20
+
+
+class TikTokVideoSyncResponse(BaseModel):
+    synced_count: int
+    cursor: int | None
+    has_more: bool
+
+
+class TikTokVideoRefreshRequest(BaseModel):
+    video_ids: list[str]
