@@ -32,6 +32,12 @@ else
   printf "%-12s %s\n" "TokenWorker" "DOWN"
 fi
 
+if [[ -f "$ROOT/runtime/draft-worker.pid" ]] && kill -0 "$(cat "$ROOT/runtime/draft-worker.pid")" 2>/dev/null; then
+  printf "%-12s %s\n" "DraftWorker" "UP"
+else
+  printf "%-12s %s\n" "DraftWorker" "DOWN"
+fi
+
 if [[ -f "$ROOT/runtime/analytics-worker.pid" ]] && kill -0 "$(cat "$ROOT/runtime/analytics-worker.pid")" 2>/dev/null; then
   printf "%-12s %s\n" "AnalyticsWorker" "UP"
 else

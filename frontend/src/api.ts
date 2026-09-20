@@ -114,6 +114,34 @@ export type TikTokAnalyticsReport = {
   video_snapshot_count: number;
 };
 
+export type MediaAsset = {
+  id: number;
+  kind: string;
+  original_name: string;
+  mime_type: string;
+  size_bytes: number;
+  sha256: string;
+  created_at: string;
+};
+
+export type DraftJob = {
+  id: number;
+  account_id: number;
+  media_asset_id?: number | null;
+  media_type: string;
+  source_type: string;
+  title?: string | null;
+  description?: string | null;
+  publish_id?: string | null;
+  status: string;
+  fail_reason?: string | null;
+  uploaded_bytes?: number | null;
+  downloaded_bytes?: number | null;
+  public_post_ids: string[];
+  created_at: string;
+  updated_at: string;
+};
+
 export type AuditEvent = {
   id: number;
   event_type: string;
@@ -141,6 +169,20 @@ async function json<T>(url: string, init?: RequestInit): Promise<T> {
   return response.json() as Promise<T>;
 }
 
+async function multipart<T>(url: string, data: FormData): Promise<T> {
+  const response = await fetch(url, {
+    method: "POST",
+    credentials: "include",
+    body: data,
+  });
+  if (!response.ok) {
+    const body = await response.json().catch(() => ({ detail: "Request failed" }));
+    const detail = typeof body.detail === "string" ? body.detail : "Request failed";
+    throw new Error(detail);
+  }
+  return response.json() as Promise<T>;
+}
+
 export const api = {
   me: () => json<AuthStatus>("/api/auth/me"),
   health: () => json<{ status: string }>("/health"),
@@ -153,6 +195,35 @@ export const api = {
   logout: () => json<AuthStatus>("/api/auth/logout", { method: "POST" }),
   tiktokConfig: () => json<TikTokConfigStatus>("/api/tiktok/config"),
   tiktokAccounts: () => json<TikTokAccount[]>("/api/tiktok/accounts"),
+  mediaAssets: () => json<MediaAsset[]>("/api/tiktok/media"),
+  uploadVideoMedia: (file: File) => {
+    const data = new FormData();
+    data.append("file", file);
+    return multipart<MediaAsset>("/api/tiktok/media/video", data);
+  },
+  draftJobs: (accountId?: number) =>
+    json<DraftJob[]>(`/api/tiktok/drafts${accountId ? `?account_id=${accountId}` : ""}`),
+  createVideoDraft: (accountId: number, mediaAssetId: number) =>
+    json<DraftJob>(`/api/tiktok/accounts/${accountId}/drafts/video`, {
+      method: "POST",
+      body: JSON.stringify({ media_asset_id: mediaAssetId }),
+    }),
+  createPhotoDraft: (
+    accountId: number,
+    input: {
+      photo_urls: string[];
+      cover_index: number;
+      title?: string;
+      description?: string;
+      is_aigc: boolean;
+    },
+  ) =>
+    json<DraftJob>(`/api/tiktok/accounts/${accountId}/drafts/photo`, {
+      method: "POST",
+      body: JSON.stringify(input),
+    }),
+  refreshDraft: (jobId: number) =>
+    json<DraftJob>(`/api/tiktok/drafts/${jobId}/refresh`, { method: "POST" }),
   auditEvents: (limit = 50) => json<AuditEvent[]>(`/api/audit/events?limit=${limit}`),
   startTikTokOAuth: (scopes?: string[]) =>
     json<OAuthStart>("/api/tiktok/oauth/start", {

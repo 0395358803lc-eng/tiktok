@@ -201,3 +201,21 @@ Historical analytics are stored only from real synchronized TikTok data.
 - `ANALYTICS_MAX_VIDEOS_PER_CYCLE` caps video refresh work per account.
 
 No historical data is simulated when a scope is missing or an account has not accumulated enough observations.
+
+
+## Draft Upload Studio
+
+The Content Posting API draft workflow is implemented for the `video.upload` scope.
+
+- Local MP4/MOV/WebM files can be staged in `runtime/media`.
+- DraftWorker initializes TikTok video upload, transfers chunks, stores the publish ID, and polls status.
+- Photo drafts accept 1–35 HTTPS image URLs from a TikTok-verified URL prefix/domain.
+- Draft delivery to `SEND_TO_USER_INBOX` is not the final post: the creator must open TikTok and complete the editing/posting flow.
+- Draft jobs and remote status are persisted in PostgreSQL.
+- The worker never processes a job for an account that has not granted `video.upload`.
+
+Runtime configuration:
+
+- `MEDIA_ROOT=runtime/media`
+- `MEDIA_MAX_VIDEO_BYTES=4294967296`
+- `DRAFT_WORKER_INTERVAL_SECONDS=30`

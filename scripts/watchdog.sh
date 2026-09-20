@@ -50,6 +50,13 @@ while true; do
     repair=1
   fi
 
+  if [[ ! -f "$ROOT/runtime/draft-worker.pid" ]] || \
+     ! kill -0 "$(cat "$ROOT/runtime/draft-worker.pid" 2>/dev/null || echo 0)" 2>/dev/null; then
+    rm -f "$ROOT/runtime/draft-worker.pid"
+    log "process failure component=draft-worker"
+    repair=1
+  fi
+
   if [[ ! -f "$ROOT/runtime/analytics-worker.pid" ]] || \
      ! kill -0 "$(cat "$ROOT/runtime/analytics-worker.pid" 2>/dev/null || echo 0)" 2>/dev/null; then
     rm -f "$ROOT/runtime/analytics-worker.pid"

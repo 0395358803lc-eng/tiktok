@@ -6,8 +6,9 @@ BASIC_SCOPE = "user.info.basic"
 PROFILE_SCOPE = "user.info.profile"
 STATS_SCOPE = "user.info.stats"
 VIDEO_LIST_SCOPE = "video.list"
+VIDEO_UPLOAD_SCOPE = "video.upload"
 
-PERSONAL_SCOPES = (BASIC_SCOPE, PROFILE_SCOPE, STATS_SCOPE, VIDEO_LIST_SCOPE)
+PERSONAL_SCOPES = (BASIC_SCOPE, PROFILE_SCOPE, STATS_SCOPE, VIDEO_LIST_SCOPE, VIDEO_UPLOAD_SCOPE)
 
 BASIC_FIELDS = ("open_id", "union_id", "avatar_url", "display_name")
 PROFILE_FIELDS = ("username", "bio_description", "profile_deep_link", "is_verified")
@@ -41,6 +42,11 @@ SCOPE_CATALOG = (
         scope=VIDEO_LIST_SCOPE,
         label="Video library",
         description="Read the authorized account's public video metadata and metrics.",
+    ),
+    ScopeCapability(
+        scope=VIDEO_UPLOAD_SCOPE,
+        label="Draft upload",
+        description="Send videos or photos to TikTok Inbox for the user to edit and post.",
     ),
 )
 

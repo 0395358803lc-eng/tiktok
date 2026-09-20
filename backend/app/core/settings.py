@@ -37,6 +37,9 @@ class Settings(BaseSettings):
     token_refresh_lead_seconds: int = 7200
     analytics_interval_seconds: int = 21600
     analytics_max_videos_per_cycle: int = 100
+    media_root: str = "runtime/media"
+    media_max_video_bytes: int = 4294967296
+    draft_worker_interval_seconds: int = 30
 
     @property
     def active_tiktok_client_key(self) -> str | None:
