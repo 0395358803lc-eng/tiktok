@@ -58,7 +58,7 @@ def _frontend_redirect(kind: str, message: str | None = None) -> RedirectRespons
     params = {"tiktok": kind}
     if message:
         params["message"] = message[:160]
-    return RedirectResponse(f"{settings.frontend_origin}/?{urlencode(params)}")
+    return RedirectResponse(f"{settings.frontend_origin}/admin?{urlencode(params)}")
 
 
 @router.get("/config", response_model=TikTokConfigStatus)
@@ -66,6 +66,7 @@ def config_status(_: Admin):
     settings = get_settings()
     return TikTokConfigStatus(
         configured=oauth_configured(settings),
+        environment=settings.tiktok_environment.lower(),
         scopes=_scope_list(settings.tiktok_scopes),
         redirect_uri=settings.tiktok_redirect_uri or None,
     )
@@ -130,13 +131,14 @@ def oauth_callback(
     if not oauth_configured(settings):
         return _frontend_redirect("error", "TikTok OAuth configuration is unavailable")
 
-    client_secret = settings.tiktok_client_secret
-    if client_secret is None or settings.tiktok_client_key is None or settings.tiktok_redirect_uri is None:
+    client_secret = settings.active_tiktok_client_secret
+    client_key = settings.active_tiktok_client_key
+    if client_secret is None or client_key is None or settings.tiktok_redirect_uri is None:
         return _frontend_redirect("error", "TikTok OAuth configuration is incomplete")
 
     try:
         token = exchange_code(
-            client_key=settings.tiktok_client_key,
+            client_key=client_key,
             client_secret=client_secret.get_secret_value(),
             code=code,
             redirect_uri=settings.tiktok_redirect_uri,
@@ -192,14 +194,14 @@ def _client_credentials() -> tuple[str, str]:
     settings = get_settings()
     if (
         not oauth_configured(settings)
-        or settings.tiktok_client_key is None
-        or settings.tiktok_client_secret is None
+        or settings.active_tiktok_client_key is None
+        or settings.active_tiktok_client_secret is None
     ):
         raise HTTPException(
             status_code=status.HTTP_503_SERVICE_UNAVAILABLE,
             detail="TikTok OAuth is not configured",
         )
-    return settings.tiktok_client_key, settings.tiktok_client_secret.get_secret_value()
+    return settings.active_tiktok_client_key, settings.active_tiktok_client_secret.get_secret_value()
 
 
 @router.post("/accounts/{account_id}/refresh", response_model=TikTokAccountSummary)

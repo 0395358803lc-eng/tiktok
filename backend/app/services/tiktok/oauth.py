@@ -9,9 +9,9 @@ AUTHORIZE_URL = "https://www.tiktok.com/v2/auth/authorize/"
 
 def oauth_configured(settings: Settings) -> bool:
     return bool(
-        settings.tiktok_client_key
-        and settings.tiktok_client_secret
-        and settings.tiktok_client_secret.get_secret_value()
+        settings.active_tiktok_client_key
+        and settings.active_tiktok_client_secret
+        and settings.active_tiktok_client_secret.get_secret_value()
         and settings.tiktok_redirect_uri
     )
 
@@ -30,7 +30,7 @@ def build_authorize_url(settings: Settings, state: str) -> str:
 
     query = urlencode(
         {
-            "client_key": settings.tiktok_client_key,
+            "client_key": settings.active_tiktok_client_key,
             "response_type": "code",
             "scope": settings.tiktok_scopes,
             "redirect_uri": settings.tiktok_redirect_uri,

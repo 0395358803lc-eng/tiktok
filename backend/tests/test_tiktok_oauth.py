@@ -237,3 +237,33 @@ def test_profile_sync_updates_profile_fields(monkeypatch):
         assert account.profile_synced_at is not None
         db.delete(account)
         db.commit()
+
+
+def test_environment_selects_production_credentials():
+    settings = get_settings().model_copy(
+        update={
+            "tiktok_environment": "production",
+            "tiktok_production_client_key": "prod-key",
+            "tiktok_production_client_secret": SecretStr("prod-secret"),
+            "tiktok_sandbox_client_key": "sandbox-key",
+            "tiktok_sandbox_client_secret": SecretStr("sandbox-secret"),
+        }
+    )
+    assert settings.active_tiktok_client_key == "prod-key"
+    assert settings.active_tiktok_client_secret is not None
+    assert settings.active_tiktok_client_secret.get_secret_value() == "prod-secret"
+
+
+def test_environment_selects_sandbox_credentials():
+    settings = get_settings().model_copy(
+        update={
+            "tiktok_environment": "sandbox",
+            "tiktok_production_client_key": "prod-key",
+            "tiktok_production_client_secret": SecretStr("prod-secret"),
+            "tiktok_sandbox_client_key": "sandbox-key",
+            "tiktok_sandbox_client_secret": SecretStr("sandbox-secret"),
+        }
+    )
+    assert settings.active_tiktok_client_key == "sandbox-key"
+    assert settings.active_tiktok_client_secret is not None
+    assert settings.active_tiktok_client_secret.get_secret_value() == "sandbox-secret"

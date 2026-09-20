@@ -10,6 +10,7 @@ export type ReadyStatus = {
 
 export type TikTokConfigStatus = {
   configured: boolean;
+  environment: string;
   scopes: string[];
   redirect_uri?: string | null;
 };

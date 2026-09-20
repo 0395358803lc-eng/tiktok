@@ -22,7 +22,12 @@ class Settings(BaseSettings):
     admin_password: SecretStr
     session_ttl_seconds: int = 43200
 
+    tiktok_environment: str = "sandbox"
     tiktok_client_key: str | None = None
+    tiktok_sandbox_client_key: str | None = None
+    tiktok_sandbox_client_secret: SecretStr | None = None
+    tiktok_production_client_key: str | None = None
+    tiktok_production_client_secret: SecretStr | None = None
     tiktok_client_secret: SecretStr | None = None
     tiktok_redirect_uri: str | None = None
     tiktok_scopes: str = "user.info.basic"
@@ -30,6 +35,18 @@ class Settings(BaseSettings):
     oauth_session_retention_seconds: int = 86400
     token_refresh_interval_seconds: int = 300
     token_refresh_lead_seconds: int = 7200
+
+    @property
+    def active_tiktok_client_key(self) -> str | None:
+        if self.tiktok_environment.lower() == "production":
+            return self.tiktok_production_client_key or self.tiktok_client_key
+        return self.tiktok_sandbox_client_key or self.tiktok_client_key
+
+    @property
+    def active_tiktok_client_secret(self) -> SecretStr | None:
+        if self.tiktok_environment.lower() == "production":
+            return self.tiktok_production_client_secret or self.tiktok_client_secret
+        return self.tiktok_sandbox_client_secret or self.tiktok_client_secret
 
     model_config = SettingsConfigDict(
         env_file=ROOT_DIR / ".env",

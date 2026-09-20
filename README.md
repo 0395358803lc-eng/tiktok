@@ -132,3 +132,25 @@ tail -f logs/token-worker.log
 ```
 
 When TikTok credentials are not configured, the worker remains healthy and skips refresh calls.
+
+
+## Public website and review routes
+
+The production-readiness frontend separates the public website from the protected admin control plane:
+
+- `/` — public product website
+- `/admin` — administrator control plane
+- `/terms` — Terms of Service
+- `/privacy` — Privacy Policy
+- `/api/tiktok/oauth/callback` — TikTok OAuth callback
+
+TikTok OAuth success/error redirects return to `/admin`.
+
+## Sandbox / Production switching
+
+Use `TIKTOK_ENVIRONMENT=sandbox` during TikTok Sandbox acceptance and switch to
+`TIKTOK_ENVIRONMENT=production` after Production approval. Optional environment-specific
+credentials are supported through `TIKTOK_SANDBOX_CLIENT_KEY`,
+`TIKTOK_SANDBOX_CLIENT_SECRET`, `TIKTOK_PRODUCTION_CLIENT_KEY`, and
+`TIKTOK_PRODUCTION_CLIENT_SECRET`. The original `TIKTOK_CLIENT_KEY` and
+`TIKTOK_CLIENT_SECRET` remain supported as migration fallbacks.

@@ -261,6 +261,9 @@ export default function App() {
                 label={tiktokConfig?.configured ? "OAuth configured" : "OAuth not configured"}
               />
               <span>
+                Environment: {tiktokConfig?.environment || "sandbox"}
+              </span>
+              <span>
                 Scopes: {tiktokConfig?.scopes.join(", ") || "user.info.basic"}
               </span>
             </div>

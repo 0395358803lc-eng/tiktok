@@ -22,14 +22,14 @@ def refresh_account_tokens(db: Session, account: TikTokAccount) -> TokenResponse
     settings = get_settings()
     if (
         not oauth_configured(settings)
-        or settings.tiktok_client_key is None
-        or settings.tiktok_client_secret is None
+        or settings.active_tiktok_client_key is None
+        or settings.active_tiktok_client_secret is None
     ):
         raise TikTokConfigurationError("TikTok OAuth is not configured")
 
     token = refresh_access_token(
-        client_key=settings.tiktok_client_key,
-        client_secret=settings.tiktok_client_secret.get_secret_value(),
+        client_key=settings.active_tiktok_client_key,
+        client_secret=settings.active_tiktok_client_secret.get_secret_value(),
         refresh_token=decrypt_token(account.refresh_token_enc),
     )
     if token.open_id != account.open_id:

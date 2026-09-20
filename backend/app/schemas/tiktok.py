@@ -5,6 +5,7 @@ from pydantic import BaseModel
 
 class TikTokConfigStatus(BaseModel):
     configured: bool
+    environment: str
     scopes: list[str]
     redirect_uri: str | None
 
