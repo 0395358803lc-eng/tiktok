@@ -1,0 +1,60 @@
+name: CI
+
+on:
+  push:
+  pull_request:
+
+jobs:
+  quality:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-python@v5
+        with:
+          python-version: "3.13"
+      - uses: actions/setup-node@v4
+        with:
+          node-version: "22"
+          cache: npm
+          cache-dependency-path: frontend/package-lock.json
+      - name: Install native services
+        run: |
+          sudo apt-get update
+          sudo apt-get install -y postgresql redis-server
+          sudo service postgresql start
+          sudo service redis-server start
+      - name: Prepare database
+        run: |
+          sudo -u postgres psql -c "CREATE USER th_tiktok WITH PASSWORD 'ci-password';"
+          sudo -u postgres createdb -O th_tiktok th_tiktok
+          cat > .env <<'EOF'
+          APP_ENV=test
+          API_HOST=127.0.0.1
+          API_PORT=18000
+          FRONTEND_ORIGIN=http://localhost:15173
+          DATABASE_URL=postgresql+psycopg://th_tiktok:ci-password@127.0.0.1:5432/th_tiktok
+          CACHE_URL=redis://127.0.0.1:6379/0
+          APP_SECRET=ci-app-secret
+          TOKEN_ENCRYPTION_KEY=MDAwMDAwMDAwMDAwMDAwMDAwMDAwMDAwMDAwMDAwMDA=
+          ADMIN_USERNAME=admin
+          ADMIN_PASSWORD=ci-admin-password
+          SESSION_TTL_SECONDS=3600
+          EOF
+      - name: Backend dependencies
+        run: |
+          python -m venv .venv
+          .venv/bin/pip install -e './backend[dev]'
+      - name: Backend checks
+        run: |
+          cd backend
+          ../.venv/bin/alembic upgrade head
+          ../.venv/bin/ruff check app tests alembic
+          ../.venv/bin/pytest
+      - name: Frontend checks
+        run: |
+          cd frontend
+          npm ci
+          npm run typecheck
+          npm run lint
+          npm test
+          npm run build
