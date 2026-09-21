@@ -2,6 +2,7 @@ import { FormEvent, useEffect, useMemo, useState } from "react";
 
 import { api, DraftJob, MediaAsset, TikTokAccount } from "./api";
 import { readVideoDuration } from "./media";
+import { jobStatusVi } from "./vi";
 
 type Props = {
   accounts: TikTokAccount[];
@@ -55,7 +56,7 @@ export default function DraftUploadPanel({ accounts }: Props) {
         if (firstVideo) setSelectedAsset(firstVideo.id);
       }
     } catch (err) {
-      setError(err instanceof Error ? err.message : "Unable to load media library");
+      setError(err instanceof Error ? err.message : "Không thể tải thư viện media");
     }
   }
 
@@ -63,7 +64,7 @@ export default function DraftUploadPanel({ accounts }: Props) {
     try {
       setJobs(await api.draftJobs(accountId));
     } catch (err) {
-      setError(err instanceof Error ? err.message : "Unable to load draft jobs");
+      setError(err instanceof Error ? err.message : "Không thể tải danh sách bản nháp");
     }
   }
 
@@ -73,7 +74,7 @@ export default function DraftUploadPanel({ accounts }: Props) {
     const data = new FormData(form);
     const file = data.get("video");
     if (!(file instanceof File) || file.size === 0) {
-      setError("Choose an MP4, MOV, or WebM video first.");
+      setError("Hãy chọn video MP4, MOV hoặc WebM trước.");
       return;
     }
 
@@ -86,9 +87,9 @@ export default function DraftUploadPanel({ accounts }: Props) {
       await loadAssets();
       setSelectedAsset(asset.id);
       form.reset();
-      setNotice("Video stored in Media Library. It has not been sent to TikTok yet.");
+      setNotice("Video đã được lưu vào thư viện media và chưa được gửi sang TikTok.");
     } catch (err) {
-      setError(err instanceof Error ? err.message : "Video upload failed");
+      setError(err instanceof Error ? err.message : "Tải video lên thất bại");
     } finally {
       setBusy(false);
     }
@@ -102,9 +103,9 @@ export default function DraftUploadPanel({ accounts }: Props) {
     try {
       const job = await api.createVideoDraft(selected.id, selectedAsset);
       await loadJobs(selected.id);
-      setNotice("Draft job #" + job.id + " queued. DraftWorker will send it to TikTok.");
+      setNotice("Tác vụ bản nháp #" + job.id + " đã vào hàng đợi. DraftWorker sẽ gửi sang TikTok.");
     } catch (err) {
-      setError(err instanceof Error ? err.message : "Unable to queue video draft");
+      setError(err instanceof Error ? err.message : "Không thể đưa video vào hàng đợi bản nháp");
     } finally {
       setBusy(false);
     }
@@ -136,10 +137,10 @@ export default function DraftUploadPanel({ accounts }: Props) {
         is_aigc: isAigc,
       });
       await loadJobs(selected.id);
-      setNotice("Photo draft job #" + job.id + " queued for TikTok Inbox.");
+      setNotice("Tác vụ ảnh nháp #" + job.id + " đã được đưa vào hàng đợi gửi tới Hộp thư TikTok.");
       form.reset();
     } catch (err) {
-      setError(err instanceof Error ? err.message : "Unable to queue photo draft");
+      setError(err instanceof Error ? err.message : "Không thể đưa ảnh vào hàng đợi bản nháp");
     } finally {
       setBusy(false);
     }
@@ -152,7 +153,7 @@ export default function DraftUploadPanel({ accounts }: Props) {
       await api.refreshDraft(jobId);
       if (selectedId !== null) await loadJobs(selectedId);
     } catch (err) {
-      setError(err instanceof Error ? err.message : "Unable to refresh draft status");
+      setError(err instanceof Error ? err.message : "Không thể làm mới trạng thái bản nháp");
     } finally {
       setBusy(false);
     }
@@ -163,9 +164,9 @@ export default function DraftUploadPanel({ accounts }: Props) {
       <div className="section-head">
         <div>
           <span className="eyebrow">CONTENT POSTING API · VIDEO.UPLOAD</span>
-          <h3>Draft Upload Studio</h3>
+          <h3>Trình tải bản nháp</h3>
         </div>
-        {accounts.length > 0 && (
+        {accounts.length > 1 && (
           <select
             className="video-account-select"
             value={selectedId ?? ""}
@@ -177,7 +178,7 @@ export default function DraftUploadPanel({ accounts }: Props) {
           >
             {accounts.map((account) => (
               <option value={account.id} key={account.id}>
-                {account.display_name || account.username || "Account #" + account.id}
+                {account.display_name || account.username || "Tài khoản #" + account.id}
               </option>
             ))}
           </select>
@@ -186,16 +187,14 @@ export default function DraftUploadPanel({ accounts }: Props) {
 
       {!selected ? (
         <div className="empty-state">
-          <strong>No connected account.</strong>
-          <span>Connect a TikTok account before creating drafts.</span>
+          <strong>Chưa có tài khoản được kết nối.</strong>
+          <span>Hãy kết nối một tài khoản TikTok trước khi tạo bản nháp.</span>
         </div>
       ) : !hasUploadScope ? (
         <div className="setup-box">
-          <strong>video.upload permission required</strong>
+          <strong>Cần quyền video.upload</strong>
           <p>
-            Enable Content Posting API + <code>video.upload</code> in TikTok Developer Portal,
-            add the scope to this app, then reconnect the account. Media can still be staged
-            locally before that permission is granted.
+            Bật Content Posting API và quyền <code>video.upload</code> trong TikTok Developer Portal, sau đó kết nối lại tài khoản để cấp quyền mới. Media vẫn có thể được lưu cục bộ trước khi quyền được cấp.
           </p>
         </div>
       ) : null}
@@ -205,8 +204,8 @@ export default function DraftUploadPanel({ accounts }: Props) {
 
       <div className="draft-studio-grid">
         <article className="draft-card">
-          <span className="eyebrow">VIDEO DRAFT</span>
-          <h4>Local Media Library</h4>
+          <span className="eyebrow">BẢN NHÁP VIDEO</span>
+          <h4>Thư viện media cục bộ</h4>
           <form className="draft-form" onSubmit={uploadVideo}>
             <label>
               MP4, MOV, or WebM
@@ -218,18 +217,18 @@ export default function DraftUploadPanel({ accounts }: Props) {
               />
             </label>
             <button type="submit" className="ghost" disabled={busy}>
-              {busy ? "Working…" : "Store video"}
+              {busy ? "Đang xử lý…" : "Lưu video"}
             </button>
           </form>
 
           <label>
-            Stored video
+            Video đã lưu
             <select
               value={selectedAsset ?? ""}
               onChange={(event) => setSelectedAsset(Number(event.target.value))}
               disabled={assets.length === 0}
             >
-              {assets.length === 0 && <option value="">No videos stored</option>}
+              {assets.length === 0 && <option value="">Chưa có video được lưu</option>}
               {assets.map((asset) => (
                 <option value={asset.id} key={asset.id}>
                   {asset.original_name} · {formatBytes(asset.size_bytes)}
@@ -241,20 +240,19 @@ export default function DraftUploadPanel({ accounts }: Props) {
             disabled={busy || !hasUploadScope || selectedAsset === null}
             onClick={queueVideo}
           >
-            Queue video to TikTok Draft
+            Gửi video vào hàng đợi bản nháp TikTok
           </button>
           <p className="draft-help">
-            TikTok sends the uploaded video to the creator's Inbox. The creator must open
-            TikTok to edit and complete the post.
+            TikTok sẽ gửi video đã tải lên tới Hộp thư của nhà sáng tạo. Người dùng mở TikTok để chỉnh sửa và hoàn tất bài đăng.
           </p>
         </article>
 
         <article className="draft-card">
-          <span className="eyebrow">PHOTO DRAFT</span>
-          <h4>Verified HTTPS image URLs</h4>
+          <span className="eyebrow">BẢN NHÁP ẢNH</span>
+          <h4>URL ảnh HTTPS đã xác minh</h4>
           <form className="draft-form" onSubmit={queuePhotos}>
             <label>
-              Photo URLs · one per line · max 35
+              URL ảnh · mỗi dòng một URL · tối đa 35
               <textarea
                 name="photo_urls"
                 rows={5}
@@ -264,24 +262,24 @@ export default function DraftUploadPanel({ accounts }: Props) {
             </label>
             <div className="draft-inline">
               <label>
-                Cover index
+                Vị trí ảnh bìa
                 <input name="cover_index" type="number" min="0" defaultValue="0" />
               </label>
               <label className="check-label">
                 <input name="is_aigc" type="checkbox" />
-                AI-generated
+                Nội dung do AI tạo
               </label>
             </div>
             <label>
-              Title
+              Tiêu đề
               <input name="title" maxLength={90} />
             </label>
             <label>
-              Description
+              Mô tả
               <textarea name="description" rows={3} maxLength={4000} />
             </label>
             <button type="submit" disabled={busy || !hasUploadScope}>
-              Queue photo draft
+              Gửi ảnh vào hàng đợi bản nháp
             </button>
           </form>
         </article>
@@ -289,22 +287,22 @@ export default function DraftUploadPanel({ accounts }: Props) {
 
       <div className="draft-jobs-head">
         <div>
-          <strong>Draft jobs</strong>
-          <span>Auto-refreshes every 15 seconds</span>
+          <strong>Tác vụ bản nháp</strong>
+          <span>Tự động làm mới mỗi 15 giây</span>
         </div>
         <button
           className="ghost"
           disabled={busy || selectedId === null}
           onClick={() => selectedId !== null && loadJobs(selectedId)}
         >
-          Refresh list
+          Làm mới danh sách
         </button>
       </div>
 
       {jobs.length === 0 ? (
         <div className="empty-state">
-          <strong>No draft jobs for this account.</strong>
-          <span>Queue a video or photo draft to begin.</span>
+          <strong>Tài khoản này chưa có tác vụ bản nháp.</strong>
+          <span>Hãy đưa video hoặc ảnh vào hàng đợi để bắt đầu.</span>
         </div>
       ) : (
         <div className="draft-job-list">
@@ -312,22 +310,22 @@ export default function DraftUploadPanel({ accounts }: Props) {
             <article className="draft-job" key={job.id}>
               <div>
                 <strong>#{job.id} · {job.media_type}</strong>
-                <span>{new Date(job.created_at).toLocaleString()}</span>
+                <span>{new Date(job.created_at).toLocaleString("vi-VN")}</span>
                 {job.publish_id && <span>Publish ID: {job.publish_id}</span>}
                 {job.fail_reason && <span className="draft-failure">{job.fail_reason}</span>}
                 {job.status === "SEND_TO_USER_INBOX" && (
                   <span className="draft-inbox">
-                    TikTok Inbox notification delivered — open TikTok to finish editing/posting.
+                    Đã gửi thông báo tới Hộp thư TikTok — mở TikTok để hoàn tất chỉnh sửa/đăng bài.
                   </span>
                 )}
               </div>
               <div className="draft-job-actions">
                 <span className={"draft-status status-" + job.status.toLowerCase()}>
-                  {job.status}
+                  {jobStatusVi(job.status)}
                 </span>
                 {job.publish_id && !["FAILED", "PUBLISH_COMPLETE"].includes(job.status) && (
                   <button className="ghost" disabled={busy} onClick={() => refreshJob(job.id)}>
-                    Check status
+                    Kiểm tra trạng thái
                   </button>
                 )}
               </div>

@@ -8,16 +8,18 @@ import {
   TikTokAccount,
 } from "./api";
 import { readVideoDuration } from "./media";
+import { jobStatusVi } from "./vi";
 
 type Props = {
   accounts: TikTokAccount[];
+  initialMode?: Mode;
 };
 
 type Mode = "VIDEO" | "PHOTO";
 
-export default function DirectPostPanel({ accounts }: Props) {
+export default function DirectPostPanel({ accounts, initialMode = "VIDEO" }: Props) {
   const [selectedId, setSelectedId] = useState<number | null>(accounts[0]?.id ?? null);
-  const [mode, setMode] = useState<Mode>("VIDEO");
+  const [mode, setMode] = useState<Mode>(initialMode);
   const [creator, setCreator] = useState<CreatorInfo | null>(null);
   const [assets, setAssets] = useState<MediaAsset[]>([]);
   const [selectedAsset, setSelectedAsset] = useState<number | null>(null);
@@ -32,8 +34,8 @@ export default function DirectPostPanel({ accounts }: Props) {
   const [isAigc, setIsAigc] = useState(false);
   const [autoAddMusic, setAutoAddMusic] = useState(false);
   const [consentAccepted, setConsentAccepted] = useState(false);
-  const [title, setTitle] = useState("");
-  const [photoDescription, setPhotoDescription] = useState("");
+  const [title, setTiêu đề] = useState("");
+  const [photoMô tả, setPhotoMô tả] = useState("");
   const [photoUrls, setPhotoUrls] = useState("");
   const [photoCoverIndex, setPhotoCoverIndex] = useState(0);
   const [coverSeconds, setCoverSeconds] = useState("");
@@ -63,6 +65,11 @@ export default function DirectPostPanel({ accounts }: Props) {
         .filter(Boolean),
     [photoUrls],
   );
+
+  useEffect(() => {
+    setMode(initialMode);
+    resetPostChoices();
+  }, [initialMode]);
 
   useEffect(() => {
     if (selectedId === null && accounts.length > 0) {
@@ -121,8 +128,8 @@ export default function DirectPostPanel({ accounts }: Props) {
     setIsAigc(false);
     setAutoAddMusic(false);
     setConsentAccepted(false);
-    setTitle("");
-    setPhotoDescription("");
+    setTiêu đề("");
+    setPhotoMô tả("");
     setCoverSeconds("");
     setScheduleEnabled(false);
     setScheduledAt("");
@@ -142,7 +149,7 @@ export default function DirectPostPanel({ accounts }: Props) {
       setConsentAccepted(false);
     } catch (err) {
       setCreator(null);
-      setError(err instanceof Error ? err.message : "Unable to load Creator Info");
+      setError(err instanceof Error ? err.message : "Không thể tải Creator Info");
     } finally {
       setCreatorBusy(false);
     }
@@ -154,7 +161,7 @@ export default function DirectPostPanel({ accounts }: Props) {
       setAssets(rows);
       if (selectedAsset === null && rows.length > 0) setSelectedAsset(rows[0].id);
     } catch (err) {
-      setError(err instanceof Error ? err.message : "Unable to load Media Library");
+      setError(err instanceof Error ? err.message : "Không thể tải thư viện media");
     }
   }
 
@@ -162,7 +169,7 @@ export default function DirectPostPanel({ accounts }: Props) {
     try {
       setJobs(await api.publishJobs(accountId));
     } catch (err) {
-      setError(err instanceof Error ? err.message : "Unable to load Direct Post jobs");
+      setError(err instanceof Error ? err.message : "Không thể tải danh sách tác vụ đăng trực tiếp");
     }
   }
 
@@ -172,7 +179,7 @@ export default function DirectPostPanel({ accounts }: Props) {
     const data = new FormData(form);
     const file = data.get("video");
     if (!(file instanceof File) || file.size === 0) {
-      setError("Choose an MP4, MOV, or WebM video first.");
+      setError("Hãy chọn video MP4, MOV hoặc WebM trước.");
       return;
     }
     setBusy(true);
@@ -185,9 +192,9 @@ export default function DirectPostPanel({ accounts }: Props) {
         duration > creator.max_video_post_duration_sec
       ) {
         throw new Error(
-          "This video is longer than the current creator limit of " +
+          "Video dài hơn giới hạn hiện tại của tài khoản là " +
             creator.max_video_post_duration_sec +
-            " seconds.",
+            " giây.",
         );
       }
       const asset = await api.uploadVideoMedia(file, duration);
@@ -198,32 +205,32 @@ export default function DirectPostPanel({ accounts }: Props) {
         "Video stored with duration metadata. Review the preview and settings before posting.",
       );
     } catch (err) {
-      setError(err instanceof Error ? err.message : "Video upload failed");
+      setError(err instanceof Error ? err.message : "Tải video lên thất bại");
     } finally {
       setBusy(false);
     }
   }
 
   function validateCommon(): string | null {
-    if (!creator) return "Load Creator Info before posting.";
-    if (!privacy) return "Choose a privacy setting.";
+    if (!creator) return "Hãy tải Creator Info trước khi đăng.";
+    if (!privacy) return "Hãy chọn quyền xem bài đăng.";
     if (!consentAccepted) return "Accept the required TikTok posting declaration.";
     if (commercial && !yourBrand && !brandedContent) {
-      return "Choose Your brand, Branded content, or both.";
+      return "Hãy chọn Thương hiệu của tôi, Nội dung hợp tác trả phí hoặc cả hai.";
     }
     if (brandedContent && privacy === "SELF_ONLY") {
-      return "Branded content cannot use Only me visibility.";
+      return "Nội dung hợp tác trả phí không thể dùng quyền xem Chỉ mình tôi.";
     }
     return null;
   }
 
   function resolveScheduledAt(): string | undefined {
     if (!scheduleEnabled) return undefined;
-    if (!scheduledAt) throw new Error("Choose a scheduled date and time.");
+    if (!scheduledAt) throw new Error("Hãy chọn ngày giờ đăng.");
     const value = new Date(scheduledAt);
-    if (!Number.isFinite(value.getTime())) throw new Error("Scheduled time is invalid.");
+    if (!Number.isFinite(value.getTime())) throw new Error("Thời gian đặt lịch không hợp lệ.");
     if (value.getTime() <= Date.now() + 30_000) {
-      throw new Error("Scheduled time must be at least 30 seconds in the future.");
+      throw new Error("Thời gian đặt lịch phải cách hiện tại ít nhất 30 giây.");
     }
     return value.toISOString();
   }
@@ -236,20 +243,20 @@ export default function DirectPostPanel({ accounts }: Props) {
       return;
     }
     if (!selectedMedia?.duration_seconds) {
-      setError("This stored video has no duration metadata. Upload it again before Direct Post.");
+      setError("Video đã lưu không có dữ liệu thời lượng. Hãy tải lại video trước khi đăng trực tiếp.");
       return;
     }
     if (
       creator?.max_video_post_duration_sec &&
       selectedMedia.duration_seconds > creator.max_video_post_duration_sec
     ) {
-      setError("Selected video exceeds the creator's current maximum duration.");
+      setError("Video đã chọn vượt quá thời lượng tối đa hiện tại của tài khoản.");
       return;
     }
 
     const seconds = coverSeconds.trim() ? Number(coverSeconds) : undefined;
     if (seconds !== undefined && (!Number.isFinite(seconds) || seconds < 0)) {
-      setError("Cover frame must be a non-negative number of seconds.");
+      setError("Cover frame must be a non-negative number of giây.");
       return;
     }
 
@@ -257,7 +264,7 @@ export default function DirectPostPanel({ accounts }: Props) {
     try {
       scheduledIso = resolveScheduledAt();
     } catch (err) {
-      setError(err instanceof Error ? err.message : "Invalid scheduled time");
+      setError(err instanceof Error ? err.message : "Thời gian đặt lịch không hợp lệ");
       return;
     }
 
@@ -284,14 +291,14 @@ export default function DirectPostPanel({ accounts }: Props) {
       });
       await loadJobs(selected.id);
       setNotice(
-        "Direct Post job #" +
+        "Tác vụ đăng trực tiếp #" +
           job.id +
           (scheduleEnabled
-          ? " scheduled. SchedulerWorker will release it at the selected time."
-          : " queued. PublishWorker will re-check Creator Info before sending."),
+          ? " đã được lên lịch. SchedulerWorker sẽ kích hoạt đúng thời điểm đã chọn."
+          : " đã vào hàng đợi. PublishWorker sẽ kiểm tra lại Creator Info trước khi gửi."),
       );
     } catch (err) {
-      setError(err instanceof Error ? err.message : "Unable to queue Direct Post");
+      setError(err instanceof Error ? err.message : "Không thể đưa bài đăng trực tiếp vào hàng đợi");
     } finally {
       setBusy(false);
     }
@@ -308,7 +315,7 @@ export default function DirectPostPanel({ accounts }: Props) {
     try {
       scheduledIso = resolveScheduledAt();
     } catch (err) {
-      setError(err instanceof Error ? err.message : "Invalid scheduled time");
+      setError(err instanceof Error ? err.message : "Thời gian đặt lịch không hợp lệ");
       return;
     }
 
@@ -320,7 +327,7 @@ export default function DirectPostPanel({ accounts }: Props) {
         photo_urls: parsedPhotoUrls,
         cover_index: photoCoverIndex,
         title: title.trim() || undefined,
-        description: photoDescription.trim() || undefined,
+        description: photoMô tả.trim() || undefined,
         privacy_level: privacy,
         allow_comment: allowComment,
         auto_add_music: autoAddMusic,
@@ -334,14 +341,14 @@ export default function DirectPostPanel({ accounts }: Props) {
       });
       await loadJobs(selected.id);
       setNotice(
-        "Photo Direct Post job #" +
+        "Tác vụ đăng ảnh trực tiếp #" +
           job.id +
           (scheduleEnabled
-          ? " scheduled. SchedulerWorker will release it at the selected time."
-          : " queued. TikTok will pull the images from the verified URLs."),
+          ? " đã được lên lịch. SchedulerWorker sẽ kích hoạt đúng thời điểm đã chọn."
+          : " đã vào hàng đợi. TikTok sẽ tải ảnh từ các URL đã xác minh."),
       );
     } catch (err) {
-      setError(err instanceof Error ? err.message : "Unable to queue photo Direct Post");
+      setError(err instanceof Error ? err.message : "Không thể đưa bài đăng ảnh vào hàng đợi");
     } finally {
       setBusy(false);
     }
@@ -354,24 +361,24 @@ export default function DirectPostPanel({ accounts }: Props) {
       await api.refreshPublishJob(jobId);
       if (selectedId !== null) await loadJobs(selectedId);
     } catch (err) {
-      setError(err instanceof Error ? err.message : "Unable to refresh Direct Post status");
+      setError(err instanceof Error ? err.message : "Không thể làm mới trạng thái đăng trực tiếp");
     } finally {
       setBusy(false);
     }
   }
 
   const declaration = commercial && brandedContent
-    ? "By posting, you agree to TikTok's Branded Content Policy and Music Usage Confirmation."
-    : "By posting, you agree to TikTok's Music Usage Confirmation.";
+    ? "Khi đăng, bạn xác nhận tuân thủ Chính sách nội dung có thương hiệu và xác nhận sử dụng âm nhạc của TikTok."
+    : "Khi đăng, bạn xác nhận điều khoản sử dụng âm nhạc của TikTok.";
 
   return (
     <section className="panel direct-post-panel">
       <div className="section-head">
         <div>
           <span className="eyebrow">CONTENT POSTING API · VIDEO.PUBLISH</span>
-          <h3>Direct Post Studio</h3>
+          <h3>Trình đăng bài trực tiếp</h3>
         </div>
-        {accounts.length > 0 && (
+        {accounts.length > 1 && (
           <select
             className="video-account-select"
             value={selectedId ?? ""}
@@ -383,7 +390,7 @@ export default function DirectPostPanel({ accounts }: Props) {
           >
             {accounts.map((account) => (
               <option value={account.id} key={account.id}>
-                {account.display_name || account.username || "Account #" + account.id}
+                {account.display_name || account.username || "Tài khoản #" + account.id}
               </option>
             ))}
           </select>
@@ -392,15 +399,14 @@ export default function DirectPostPanel({ accounts }: Props) {
 
       {!selected ? (
         <div className="empty-state">
-          <strong>No connected account.</strong>
-          <span>Connect a TikTok account before using Direct Post.</span>
+          <strong>Chưa có tài khoản được kết nối.</strong>
+          <span>Hãy kết nối tài khoản TikTok trước khi dùng tính năng đăng trực tiếp.</span>
         </div>
       ) : !hasPublishScope ? (
         <div className="setup-box">
-          <strong>video.publish permission required</strong>
+          <strong>Cần quyền video.publish</strong>
           <p>
-            Enable Direct Post in Content Posting API, request <code>video.publish</code>,
-            then reconnect this account and authorize the new permission.
+            Bật Direct Post trong Content Posting API, xin quyền <code>video.publish</code>, sau đó kết nối lại tài khoản để cấp quyền mới.
           </p>
         </div>
       ) : null}
@@ -415,10 +421,10 @@ export default function DirectPostPanel({ accounts }: Props) {
                 <div className="creator-placeholder">TT</div>
               )}
               <div>
-                <strong>{creator?.creator_nickname || "Creator Info not loaded"}</strong>
+                <strong>{creator?.creator_nickname || "Chưa tải Creator Info"}</strong>
                 {creator?.creator_username && <span>@{creator.creator_username}</span>}
                 <span>
-                  Max video: {creator?.max_video_post_duration_sec ?? "—"} seconds
+                  Video tối đa: {creator?.max_video_post_duration_sec ?? "—"} seconds
                 </span>
               </div>
             </div>
@@ -427,13 +433,12 @@ export default function DirectPostPanel({ accounts }: Props) {
               disabled={creatorBusy || selectedId === null}
               onClick={() => selectedId !== null && loadCreator(selectedId)}
             >
-              {creatorBusy ? "Loading…" : "Refresh Creator Info"}
+              {creatorBusy ? "Đang tải…" : "Làm mới Creator Info"}
             </button>
           </div>
 
           <p className="direct-post-warning">
-            TikTok requires the latest Creator Info for every Direct Post. Unaudited Direct
-            Post clients are subject to TikTok's private-visibility restrictions until audit.
+            TikTok yêu cầu Creator Info mới nhất cho mỗi lần đăng trực tiếp. Ứng dụng chưa được audit phải tuân theo giới hạn quyền xem riêng tư của TikTok cho tới khi hoàn tất audit.
           </p>
 
           {error && <div className="error global-error">{error}</div>}
@@ -462,12 +467,12 @@ export default function DirectPostPanel({ accounts }: Props) {
 
           <div className="direct-post-grid">
             <article className="direct-media-card">
-              <span className="eyebrow">PREVIEW</span>
+              <span className="eyebrow">XEM TRƯỚC</span>
               {mode === "VIDEO" ? (
                 <>
                   <form className="draft-form" onSubmit={uploadVideo}>
                     <label>
-                      Store a video with duration metadata
+                      Lưu video kèm dữ liệu thời lượng
                       <input
                         name="video"
                         type="file"
@@ -476,17 +481,17 @@ export default function DirectPostPanel({ accounts }: Props) {
                       />
                     </label>
                     <button type="submit" className="ghost" disabled={busy}>
-                      Store video
+                      Lưu video
                     </button>
                   </form>
                   <label>
-                    Stored video
+                    Video đã lưu
                     <select
                       value={selectedAsset ?? ""}
                       onChange={(event) => setSelectedAsset(Number(event.target.value))}
                       disabled={assets.length === 0}
                     >
-                      {assets.length === 0 && <option value="">No videos stored</option>}
+                      {assets.length === 0 && <option value="">Chưa có video được lưu</option>}
                       {assets.map((asset) => (
                         <option value={asset.id} key={asset.id}>
                           {asset.original_name} · {formatDuration(asset.duration_seconds)}
@@ -512,12 +517,12 @@ export default function DirectPostPanel({ accounts }: Props) {
                       rows={4}
                       maxLength={2200}
                       value={title}
-                      onChange={(event) => setTitle(event.target.value)}
-                      placeholder="Caption, hashtags and mentions"
+                      onChange={(event) => setTiêu đề(event.target.value)}
+                      placeholder="Chú thích, hashtag và mention"
                     />
                   </label>
                   <label>
-                    Cover frame · seconds
+                    Khung ảnh bìa · giây
                     <input
                       type="number"
                       min="0"
@@ -530,7 +535,7 @@ export default function DirectPostPanel({ accounts }: Props) {
               ) : (
                 <>
                   <label>
-                    Verified HTTPS photo URLs · one per line · max 35
+                    URL ảnh HTTPS đã xác minh · mỗi dòng một URL · tối đa 35
                     <textarea
                       rows={6}
                       value={photoUrls}
@@ -544,7 +549,7 @@ export default function DirectPostPanel({ accounts }: Props) {
                     ))}
                   </div>
                   <label>
-                    Cover index
+                    Vị trí ảnh bìa
                     <input
                       type="number"
                       min="0"
@@ -554,20 +559,20 @@ export default function DirectPostPanel({ accounts }: Props) {
                     />
                   </label>
                   <label>
-                    Title
+                    Tiêu đề
                     <input
                       maxLength={90}
                       value={title}
-                      onChange={(event) => setTitle(event.target.value)}
+                      onChange={(event) => setTiêu đề(event.target.value)}
                     />
                   </label>
                   <label>
-                    Description
+                    Mô tả
                     <textarea
                       rows={4}
                       maxLength={4000}
-                      value={photoDescription}
-                      onChange={(event) => setPhotoDescription(event.target.value)}
+                      value={photoMô tả}
+                      onChange={(event) => setPhotoMô tả(event.target.value)}
                     />
                   </label>
                   <label className="check-label">
@@ -576,21 +581,21 @@ export default function DirectPostPanel({ accounts }: Props) {
                       checked={autoAddMusic}
                       onChange={(event) => setAutoAddMusic(event.target.checked)}
                     />
-                    Auto add recommended music
+                    Tự động thêm nhạc được đề xuất
                   </label>
                 </>
               )}
             </article>
 
             <article className="direct-settings-card">
-              <span className="eyebrow">POST SETTINGS</span>
+              <span className="eyebrow">THIẾT LẬP BÀI ĐĂNG</span>
               <label>
-                Privacy · required
+                Quyền xem · bắt buộc
                 <select
                   value={privacy}
                   onChange={(event) => setPrivacy(event.target.value)}
                 >
-                  <option value="" disabled>Select privacy</option>
+                  <option value="" disabled>Chọn quyền xem</option>
                   {creator?.privacy_level_options.map((option) => (
                     <option
                       value={option}
@@ -604,8 +609,8 @@ export default function DirectPostPanel({ accounts }: Props) {
               </label>
 
               <div className="interaction-box">
-                <strong>Interactions</strong>
-                <span>Nothing is enabled by default.</span>
+                <strong>Tương tác</strong>
+                <span>Mặc định không bật tùy chọn nào.</span>
                 <label className="check-label">
                   <input
                     type="checkbox"
@@ -613,7 +618,7 @@ export default function DirectPostPanel({ accounts }: Props) {
                     disabled={Boolean(creator?.comment_disabled)}
                     onChange={(event) => setAllowComment(event.target.checked)}
                   />
-                  Allow comments
+                  Cho phép bình luận
                 </label>
                 {mode === "VIDEO" && (
                   <>
@@ -624,7 +629,7 @@ export default function DirectPostPanel({ accounts }: Props) {
                         disabled={Boolean(creator?.duet_disabled)}
                         onChange={(event) => setAllowDuet(event.target.checked)}
                       />
-                      Allow Duet
+                      Cho phép Duet
                     </label>
                     <label className="check-label">
                       <input
@@ -633,7 +638,7 @@ export default function DirectPostPanel({ accounts }: Props) {
                         disabled={Boolean(creator?.stitch_disabled)}
                         onChange={(event) => setAllowStitch(event.target.checked)}
                       />
-                      Allow Stitch
+                      Cho phép Stitch
                     </label>
                   </>
                 )}
@@ -646,7 +651,7 @@ export default function DirectPostPanel({ accounts }: Props) {
                     checked={commercial}
                     onChange={(event) => setCommercial(event.target.checked)}
                   />
-                  This content promotes a brand, product, service, or my business
+                  Nội dung này quảng bá thương hiệu, sản phẩm, dịch vụ hoặc doanh nghiệp của tôi
                 </label>
                 {commercial && (
                   <div className="commercial-options">
@@ -656,7 +661,7 @@ export default function DirectPostPanel({ accounts }: Props) {
                         checked={yourBrand}
                         onChange={(event) => setYourBrand(event.target.checked)}
                       />
-                      Your brand · Promotional content
+                      Thương hiệu của tôi · Nội dung quảng bá
                     </label>
                     <label className="check-label">
                       <input
@@ -664,11 +669,11 @@ export default function DirectPostPanel({ accounts }: Props) {
                         checked={brandedContent}
                         onChange={(event) => setBrandedContent(event.target.checked)}
                       />
-                      Branded content · Paid partnership
+                      Nội dung có thương hiệu · Hợp tác trả phí
                     </label>
                     {!yourBrand && !brandedContent && (
                       <span className="draft-failure">
-                        Choose at least one commercial-content type.
+                        Hãy chọn ít nhất một loại nội dung thương mại.
                       </span>
                     )}
                   </div>
@@ -681,7 +686,7 @@ export default function DirectPostPanel({ accounts }: Props) {
                   checked={isAigc}
                   onChange={(event) => setIsAigc(event.target.checked)}
                 />
-                AI-generated content
+                Nội dung do AI tạo
               </label>
 
               <label className="consent-box">
@@ -700,12 +705,12 @@ export default function DirectPostPanel({ accounts }: Props) {
                     checked={scheduleEnabled}
                     onChange={(event) => setScheduleEnabled(event.target.checked)}
                   />
-                  Schedule instead of publishing now
+                  Lên lịch thay vì đăng ngay
                 </label>
                 {scheduleEnabled && (
                   <div className="schedule-input-grid">
                     <label>
-                      Local date & time
+                      Ngày giờ địa phương
                       <input
                         type="datetime-local"
                         value={scheduledAt}
@@ -713,7 +718,7 @@ export default function DirectPostPanel({ accounts }: Props) {
                       />
                     </label>
                     <label>
-                      Max safe retries
+                      Số lần thử lại an toàn tối đa
                       <input
                         type="number"
                         min="0"
@@ -722,7 +727,7 @@ export default function DirectPostPanel({ accounts }: Props) {
                         onChange={(event) => setMaxRetries(Number(event.target.value))}
                       />
                     </label>
-                    <span>Time is converted to UTC by the browser before it reaches the scheduler.</span>
+                    <span>Trình duyệt sẽ chuyển thời gian sang UTC trước khi gửi tới bộ lập lịch.</span>
                   </div>
                 )}
               </div>
@@ -741,29 +746,29 @@ export default function DirectPostPanel({ accounts }: Props) {
                 }
                 onClick={mode === "VIDEO" ? queueVideo : queuePhoto}
               >
-                {busy ? "Working…" : scheduleEnabled ? "Schedule Direct Post" : "Publish directly to TikTok"}
+                {busy ? "Đang xử lý…" : scheduleEnabled ? "Lên lịch đăng trực tiếp" : "Đăng trực tiếp lên TikTok"}
               </button>
             </article>
           </div>
 
           <div className="draft-jobs-head">
             <div>
-              <strong>Direct Post jobs</strong>
-              <span>PublishWorker checks status automatically.</span>
+              <strong>Tác vụ đăng trực tiếp</strong>
+              <span>PublishWorker tự động kiểm tra trạng thái.</span>
             </div>
             <button
               className="ghost"
               disabled={busy || selectedId === null}
               onClick={() => selectedId !== null && loadJobs(selectedId)}
             >
-              Refresh list
+              Làm mới danh sách
             </button>
           </div>
 
           {jobs.length === 0 ? (
             <div className="empty-state">
-              <strong>No Direct Post jobs for this account.</strong>
-              <span>Complete the review settings above to create one.</span>
+              <strong>No Tác vụ đăng trực tiếp for this account.</strong>
+              <span>Hoàn tất các thiết lập phía trên để tạo tác vụ.</span>
             </div>
           ) : (
             <div className="draft-job-list">
@@ -771,14 +776,14 @@ export default function DirectPostPanel({ accounts }: Props) {
                 <article className="draft-job" key={job.id}>
                   <div>
                     <strong>#{job.id} · {job.media_type} · {privacyLabel(job.privacy_level)}</strong>
-                    <span>{new Date(job.created_at).toLocaleString()}</span>
-                    <span>Queue: {job.schedule_status}</span>
+                    <span>{new Date(job.created_at).toLocaleString("vi-VN")}</span>
+                    <span>Hàng đợi: {job.schedule_status}</span>
                     {job.scheduled_at && (
-                      <span>Scheduled: {new Date(job.scheduled_at).toLocaleString()}</span>
+                      <span>Đã lên lịch: {new Date(job.scheduled_at).toLocaleString("vi-VN")}</span>
                     )}
                     {job.publish_id && <span>Publish ID: {job.publish_id}</span>}
                     {job.public_post_ids.length > 0 && (
-                      <span>Post IDs: {job.public_post_ids.join(", ")}</span>
+                      <span>Post ID: {job.public_post_ids.join(", ")}</span>
                     )}
                     {job.fail_reason && (
                       <span className="draft-failure">{job.fail_reason}</span>
@@ -786,7 +791,7 @@ export default function DirectPostPanel({ accounts }: Props) {
                   </div>
                   <div className="draft-job-actions">
                     <span className={"draft-status status-" + job.status.toLowerCase()}>
-                      {job.status}
+                      {jobStatusVi(job.status)}
                     </span>
                     {job.publish_id && !["FAILED", "PUBLISH_COMPLETE"].includes(job.status) && (
                       <button
@@ -794,7 +799,7 @@ export default function DirectPostPanel({ accounts }: Props) {
                         disabled={busy}
                         onClick={() => refreshJob(job.id)}
                       >
-                        Check status
+                        Kiểm tra trạng thái
                       </button>
                     )}
                   </div>
@@ -810,16 +815,16 @@ export default function DirectPostPanel({ accounts }: Props) {
 
 function privacyLabel(value: string) {
   const labels: Record<string, string> = {
-    PUBLIC_TO_EVERYONE: "Everyone",
-    MUTUAL_FOLLOW_FRIENDS: "Friends",
-    FOLLOWER_OF_CREATOR: "Followers",
-    SELF_ONLY: "Only me",
+    PUBLIC_TO_EVERYONE: "Mọi người",
+    MUTUAL_FOLLOW_FRIENDS: "Bạn bè",
+    FOLLOWER_OF_CREATOR: "Người theo dõi",
+    SELF_ONLY: "Chỉ mình tôi",
   };
   return labels[value] || value;
 }
 
 function formatDuration(value?: number | null) {
-  if (typeof value !== "number") return "duration unknown";
+  if (typeof value !== "number") return "không xác định thời lượng";
   if (value < 60) return value.toFixed(1) + "s";
   return Math.floor(value / 60) + "m " + Math.round(value % 60) + "s";
 }

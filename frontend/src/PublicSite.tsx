@@ -1,4 +1,4 @@
-const EFFECTIVE_DATE = "September 21, 2026";
+const EFFECTIVE_DATE = "21 tháng 9, 2026";
 
 function SiteHeader() {
   return (
@@ -7,15 +7,15 @@ function SiteHeader() {
         <span className="mark">TH</span>
         <span>
           <strong>TH TikTok Manager</strong>
-          <small>Authorized account management</small>
+          <small>Quản lý tài khoản được ủy quyền</small>
         </span>
       </a>
-      <nav className="public-nav" aria-label="Primary navigation">
-        <a href="/#features">Features</a>
-        <a href="/#security">Security</a>
-        <a href="/terms">Terms</a>
-        <a href="/privacy">Privacy</a>
-        <a className="nav-cta" href="/admin">Admin</a>
+      <nav className="public-nav" aria-label="Điều hướng chính">
+        <a href="/#features">Tính năng</a>
+        <a href="/#security">Bảo mật</a>
+        <a href="/terms">Điều khoản</a>
+        <a href="/privacy">Quyền riêng tư</a>
+        <a className="nav-cta" href="/admin">Quản trị</a>
       </nav>
     </header>
   );
@@ -26,12 +26,12 @@ function SiteFooter() {
     <footer className="public-footer">
       <div>
         <strong>TH TikTok Manager</strong>
-        <span>Account connections use TikTok's official OAuth authorization flow.</span>
+        <span>Kết nối tài khoản sử dụng luồng OAuth chính thức của TikTok.</span>
       </div>
       <div className="footer-links">
-        <a href="/terms">Terms of Service</a>
-        <a href="/privacy">Privacy Policy</a>
-        <a href="/admin">Admin access</a>
+        <a href="/terms">Điều khoản dịch vụ</a>
+        <a href="/privacy">Chính sách quyền riêng tư</a>
+        <a href="/admin">Truy cập quản trị</a>
       </div>
     </footer>
   );
@@ -44,76 +44,74 @@ export function PublicHome() {
 
       <section className="public-hero">
         <div>
-          <span className="eyebrow">AUTHORIZED ACCOUNT MANAGEMENT</span>
-          <h1>Connect and manage TikTok accounts through official OAuth.</h1>
+          <span className="eyebrow">QUẢN LÝ TÀI KHOẢN ĐƯỢC ỦY QUYỀN</span>
+          <h1>Kết nối và quản lý tài khoản TikTok qua OAuth chính thức.</h1>
           <p>
-            TH TikTok Manager helps authorized users connect their TikTok accounts,
-            view basic profile information, monitor connection status, refresh access,
-            and revoke authorization from one secure control plane.
+            TH TikTok Manager giúp người dùng được ủy quyền kết nối tài khoản, đồng bộ
+            dữ liệu được phép, quản lý video và các luồng đăng nội dung từ một giao diện
+            quản trị tập trung.
           </p>
           <div className="hero-actions">
-            <a className="button-link" href="/admin">Open admin</a>
-            <a className="text-link" href="/privacy">How data is handled</a>
+            <a className="button-link" href="/admin">Mở trang quản trị</a>
+            <a className="text-link" href="/privacy">Cách dữ liệu được xử lý</a>
           </div>
         </div>
+
         <div className="public-card">
-          <span className="eyebrow">CURRENT INTEGRATION</span>
-          <h2>Official account authorization</h2>
+          <span className="eyebrow">TÍCH HỢP HIỆN TẠI</span>
+          <h2>Ủy quyền tài khoản chính thức</h2>
           <p>
-            Users authorize access on TikTok. The service does not request or collect
-            TikTok passwords. Features are activated only when the application has the
-            corresponding TikTok product approval and the user grants the required scope.
+            Người dùng cấp quyền trực tiếp trên TikTok. Dịch vụ không yêu cầu hoặc thu thập
+            mật khẩu TikTok. Mỗi tính năng chỉ hoạt động khi ứng dụng được TikTok cho phép
+            sản phẩm/scope tương ứng và người dùng đã cấp quyền đó.
           </p>
           <div className="public-facts">
-            <span>OAuth 2.0 authorization</span>
-            <span>Profile and analytics tools</span>
-            <span>Video library and publishing workflows</span>
-            <span>Server-side token storage</span>
+            <span>Ủy quyền OAuth 2.0</span>
+            <span>Hồ sơ và phân tích</span>
+            <span>Thư viện video và đăng nội dung</span>
+            <span>Token lưu phía máy chủ</span>
           </div>
         </div>
       </section>
 
       <section className="public-section" id="features">
-        <span className="eyebrow">FEATURES</span>
-        <h2>Built around explicit user authorization.</h2>
+        <span className="eyebrow">TÍNH NĂNG</span>
+        <h2>Xây dựng trên cơ chế cấp quyền rõ ràng của người dùng.</h2>
         <div className="feature-grid">
           <article>
-            <h3>Account connection</h3>
-            <p>Connect each account separately through TikTok Login Kit and explicit consent.</p>
+            <h3>Kết nối tài khoản</h3>
+            <p>Kết nối từng tài khoản riêng biệt qua TikTok Login Kit và sự đồng ý rõ ràng.</p>
           </article>
           <article>
-            <h3>Profile and statistics</h3>
+            <h3>Hồ sơ và thống kê</h3>
+            <p>Đồng bộ các trường hồ sơ và chỉ số tài khoản khi scope tương ứng đã được cấp.</p>
+          </article>
+          <article>
+            <h3>Thư viện video và phân tích</h3>
             <p>
-              Synchronize authorized profile fields and account statistics when the approved
-              scopes are granted.
+              Lấy video công khai của tài khoản được ủy quyền, làm mới chỉ số và xây dựng
+              snapshot hiệu suất theo thời gian khi quyền video đã được cấp.
             </p>
           </article>
           <article>
-            <h3>Video library and analytics</h3>
+            <h3>Tải bản nháp</h3>
             <p>
-              Read an authorized account's public videos, refresh metrics, and build historical
-              performance snapshots when video access is approved.
+              Gửi video hoặc ảnh được người dùng cho phép tới Hộp thư TikTok dưới dạng bản
+              nháp để nhà sáng tạo hoàn thiện việc chỉnh sửa và đăng.
             </p>
           </article>
           <article>
-            <h3>Draft upload</h3>
+            <h3>Đăng trực tiếp và lên lịch</h3>
             <p>
-              Send authorized video or photo content to TikTok Inbox as a draft for the creator
-              to finish editing and posting.
+              Chuẩn bị metadata Direct Post, tuân theo Creator Info hiện tại và vận hành
+              hàng đợi đăng bài theo Content Posting API.
             </p>
           </article>
           <article>
-            <h3>Direct Post and scheduling</h3>
+            <h3>Vận hành và nhật ký</h3>
             <p>
-              Prepare Direct Post metadata, respect current creator settings, and schedule
-              approved publishing jobs through the Content Posting API.
-            </p>
-          </article>
-          <article>
-            <h3>Operations and audit history</h3>
-            <p>
-              Monitor tokens, scopes, webhooks, publishing status, backups, and account events
-              from one control plane.
+              Theo dõi token, scope, webhook, trạng thái đăng bài, backup và sự kiện tài khoản
+              từ một trung tâm điều hành.
             </p>
           </article>
         </div>
@@ -121,31 +119,30 @@ export function PublicHome() {
 
       <section className="public-section split-section" id="security">
         <div>
-          <span className="eyebrow">SECURITY</span>
-          <h2>Credentials stay on the server.</h2>
+          <span className="eyebrow">BẢO MẬT</span>
+          <h2>Thông tin nhạy cảm được giữ phía máy chủ.</h2>
         </div>
         <div>
           <p>
-            Access and refresh tokens are stored server-side in encrypted form. OAuth
-            authorization codes and state values are not written to application access logs.
-            Administrative sessions are server-backed and use HttpOnly cookies.
+            Access token và refresh token được lưu phía máy chủ ở dạng mã hóa. Authorization
+            code và OAuth state không được chủ động ghi vào access log của ứng dụng.
+            Phiên quản trị được lưu phía máy chủ và dùng cookie HttpOnly.
           </p>
           <p>
-            Connected users can revoke the application's TikTok authorization by using the
-            disconnect action. The application only requests permissions required by the
-            implemented features.
+            Người dùng có thể ngắt kết nối để thu hồi quyền TikTok. Ứng dụng chỉ yêu cầu
+            các quyền cần cho những tính năng đã triển khai.
           </p>
         </div>
       </section>
 
       <section className="public-section legal-callout">
         <div>
-          <span className="eyebrow">TRANSPARENCY</span>
-          <h2>Read the policies before connecting an account.</h2>
+          <span className="eyebrow">MINH BẠCH</span>
+          <h2>Đọc chính sách trước khi kết nối tài khoản.</h2>
         </div>
         <div className="hero-actions">
-          <a className="button-link" href="/privacy">Privacy Policy</a>
-          <a className="button-link secondary" href="/terms">Terms of Service</a>
+          <a className="button-link" href="/privacy">Chính sách quyền riêng tư</a>
+          <a className="button-link secondary" href="/terms">Điều khoản dịch vụ</a>
         </div>
       </section>
 
@@ -159,66 +156,64 @@ export function TermsPage() {
     <main className="public-shell legal-page">
       <SiteHeader />
       <article className="legal-document">
-        <span className="eyebrow">LEGAL</span>
-        <h1>Terms of Service</h1>
-        <p className="legal-date">Effective date: {EFFECTIVE_DATE}</p>
+        <span className="eyebrow">PHÁP LÝ</span>
+        <h1>Điều khoản dịch vụ</h1>
+        <p className="legal-date">Ngày hiệu lực: {EFFECTIVE_DATE}</p>
 
-        <h2>1. Service</h2>
+        <h2>1. Dịch vụ</h2>
         <p>
-          TH TikTok Manager provides tools for users to connect TikTok accounts they are
-          authorized to control, synchronize permitted profile and analytics data, manage
-          authorized public-video information, stage draft uploads, prepare Direct Post jobs,
-          schedule publishing operations, maintain OAuth connections, and revoke those
-          connections. Each feature depends on the TikTok products and scopes approved for the
-          application and granted by the user. Access to TikTok features is subject to TikTok's
-          own terms, policies, availability, and approval requirements.
+          TH TikTok Manager cung cấp công cụ để người dùng kết nối các tài khoản TikTok mà
+          họ được phép quản lý, đồng bộ dữ liệu hồ sơ và phân tích được cấp quyền, quản lý
+          thông tin video công khai, chuẩn bị bản nháp, Direct Post, lịch đăng, duy trì kết
+          nối OAuth và thu hồi kết nối. Mỗi tính năng phụ thuộc vào sản phẩm và scope TikTok
+          đã cấp cho ứng dụng và được người dùng cho phép.
         </p>
 
-        <h2>2. Authorized use</h2>
+        <h2>2. Sử dụng được ủy quyền</h2>
         <p>
-          You may use the service only with accounts and data you are authorized to access.
-          You must not use the service to impersonate others, violate applicable law, bypass
-          platform controls, or interfere with TikTok or other systems.
+          Bạn chỉ được sử dụng dịch vụ với tài khoản và dữ liệu mà bạn có quyền truy cập.
+          Không được dùng dịch vụ để mạo danh người khác, vi phạm pháp luật, vượt qua cơ chế
+          kiểm soát của nền tảng hoặc gây can thiệp tới TikTok hay hệ thống khác.
         </p>
 
-        <h2>3. Account authorization</h2>
+        <h2>3. Cấp quyền tài khoản</h2>
         <p>
-          TikTok account access is granted through TikTok's OAuth authorization flow. The
-          service does not require your TikTok password. You are responsible for reviewing
-          the permissions shown by TikTok before authorizing access.
+          Quyền truy cập tài khoản TikTok được cấp thông qua luồng OAuth của TikTok.
+          Dịch vụ không yêu cầu mật khẩu TikTok. Người dùng chịu trách nhiệm xem lại các
+          quyền TikTok hiển thị trước khi xác nhận cấp quyền.
         </p>
 
-        <h2>4. Availability</h2>
+        <h2>4. Khả dụng</h2>
         <p>
-          Features may change or become unavailable when TikTok changes its APIs, permissions,
-          review status, rate limits, or platform requirements. The service is provided on an
-          as-available basis and may be interrupted for maintenance or security reasons.
+          Tính năng có thể thay đổi hoặc tạm ngừng khi TikTok thay đổi API, scope, trạng thái
+          review, rate limit hoặc yêu cầu nền tảng. Dịch vụ cũng có thể gián đoạn để bảo trì
+          hoặc xử lý vấn đề bảo mật.
         </p>
 
-        <h2>5. Security responsibilities</h2>
+        <h2>5. Trách nhiệm bảo mật</h2>
         <p>
-          You are responsible for protecting your own administrator credentials and devices.
-          Report suspected unauthorized access promptly and disconnect affected integrations
-          when appropriate.
+          Người dùng có trách nhiệm bảo vệ thông tin đăng nhập quản trị và thiết bị của mình.
+          Khi nghi ngờ truy cập trái phép, cần xử lý kịp thời và ngắt kết nối integration liên
+          quan khi phù hợp.
         </p>
 
-        <h2>6. Termination and disconnect</h2>
+        <h2>6. Ngắt kết nối</h2>
         <p>
-          You may disconnect a connected TikTok account from the control plane. Access may
-          also be suspended when authorization expires, is revoked, or no longer satisfies
-          TikTok's requirements.
+          Người dùng có thể ngắt kết nối tài khoản TikTok khỏi trang quản trị. Quyền truy cập
+          cũng có thể dừng khi authorization hết hạn, bị thu hồi hoặc không còn đáp ứng yêu
+          cầu của TikTok.
         </p>
 
-        <h2>7. Privacy</h2>
+        <h2>7. Quyền riêng tư</h2>
         <p>
-          The collection and use of information through this service is described in the
-          <a href="/privacy"> Privacy Policy</a>.
+          Việc thu thập và sử dụng thông tin được mô tả tại
+          <a href="/privacy"> Chính sách quyền riêng tư</a>.
         </p>
 
-        <h2>8. Changes</h2>
+        <h2>8. Thay đổi</h2>
         <p>
-          These Terms may be updated when the service or applicable platform requirements
-          change. The effective date shown above identifies the current version.
+          Điều khoản có thể được cập nhật khi chức năng dịch vụ hoặc yêu cầu của nền tảng thay
+          đổi. Ngày hiệu lực phía trên xác định phiên bản hiện tại.
         </p>
       </article>
       <SiteFooter />
@@ -231,78 +226,73 @@ export function PrivacyPage() {
     <main className="public-shell legal-page">
       <SiteHeader />
       <article className="legal-document">
-        <span className="eyebrow">LEGAL</span>
-        <h1>Privacy Policy</h1>
-        <p className="legal-date">Effective date: {EFFECTIVE_DATE}</p>
+        <span className="eyebrow">PHÁP LÝ</span>
+        <h1>Chính sách quyền riêng tư</h1>
+        <p className="legal-date">Ngày hiệu lực: {EFFECTIVE_DATE}</p>
 
-        <h2>1. Information processed</h2>
+        <h2>1. Thông tin được xử lý</h2>
         <p>
-          When a user authorizes TikTok access, the service may process the TikTok account
-          identifier, display name, avatar URL, additional profile fields, account statistics,
-          public-video metadata and metrics, granted scopes, OAuth access token, refresh token,
-          token expiration times, connection status, and synchronization timestamps when the
-          corresponding permissions are granted. When a user uses content workflows, the
-          service may also process staged media metadata, user-supplied photo URLs, captions,
-          privacy and interaction selections, draft/direct-post job state, scheduling metadata,
-          TikTok publish identifiers, public post identifiers, and webhook events.
-          Administrative login and account-management events are also recorded for security
-          and operational auditing.
+          Khi người dùng cấp quyền TikTok, dịch vụ có thể xử lý định danh tài khoản, tên hiển
+          thị, avatar, trường hồ sơ mở rộng, thống kê tài khoản, metadata/chỉ số video công
+          khai, scope đã cấp, access token, refresh token, thời hạn token, trạng thái kết nối
+          và thời điểm đồng bộ khi quyền tương ứng đã được cấp. Với luồng nội dung, dịch vụ
+          cũng có thể xử lý metadata media, URL ảnh do người dùng cung cấp, caption, lựa chọn
+          quyền xem/tương tác, trạng thái draft/direct-post, lịch đăng, publish ID, public post
+          ID và sự kiện webhook. Hoạt động đăng nhập quản trị và thao tác tài khoản được ghi
+          lại phục vụ bảo mật và vận hành.
         </p>
 
-        <h2>2. How information is obtained</h2>
+        <h2>2. Cách lấy thông tin</h2>
         <p>
-          TikTok account information is obtained through TikTok's official OAuth and API
-          interfaces after the user grants permission. The service does not collect a user's
-          TikTok password.
+          Dữ liệu tài khoản TikTok được lấy qua OAuth và API chính thức sau khi người dùng cấp
+          quyền. Dịch vụ không thu thập mật khẩu TikTok của người dùng.
         </p>
 
-        <h2>3. Purposes</h2>
+        <h2>3. Mục đích sử dụng</h2>
         <p>
-          Information is used to maintain authorized account connections, display permitted
-          profile and statistics, synchronize public-video data, build historical analytics,
-          execute user-requested draft/direct-post workflows, operate publishing schedules,
-          process TikTok webhook updates, refresh permitted access, support
-          disconnect/revocation, diagnose service health, and maintain a security audit trail.
+          Thông tin được dùng để duy trì kết nối được ủy quyền, hiển thị hồ sơ/thống kê được
+          phép, đồng bộ video công khai, xây dựng phân tích lịch sử, thực hiện luồng bản nháp
+          hoặc Direct Post do người dùng yêu cầu, vận hành lịch đăng, xử lý webhook TikTok,
+          làm mới quyền truy cập, hỗ trợ ngắt kết nối/thu hồi, chẩn đoán hệ thống và duy trì
+          nhật ký bảo mật.
         </p>
 
-        <h2>4. Storage and security</h2>
+        <h2>4. Lưu trữ và bảo mật</h2>
         <p>
-          OAuth access and refresh tokens are stored on the server in encrypted form.
-          Staged local media is stored server-side for the requested content workflow and is
-          not exposed through the public website. Authorization codes, OAuth state values, raw
-          tokens, and administrator passwords are not intentionally exposed in the application
-          UI or written to application access logs. Administrative sessions use server-backed
-          records and HttpOnly cookies.
+          Access token và refresh token được lưu phía máy chủ ở dạng mã hóa. Media cục bộ đã
+          staging được lưu phía máy chủ cho luồng nội dung tương ứng và không được công khai
+          trên website. Authorization code, OAuth state, raw token và mật khẩu quản trị không
+          được chủ động hiển thị trong UI hoặc ghi vào access log. Phiên quản trị dùng dữ liệu
+          phiên phía máy chủ và cookie HttpOnly.
         </p>
 
-        <h2>5. Sharing</h2>
+        <h2>5. Chia sẻ dữ liệu</h2>
         <p>
-          The service sends information to TikTok only as necessary to perform the authorized
-          API operations requested by the user. The service does not intentionally sell TikTok
-          OAuth tokens or connected-account profile data.
+          Dịch vụ chỉ gửi thông tin tới TikTok khi cần để thực hiện thao tác API mà người dùng
+          đã yêu cầu và cấp quyền. Dịch vụ không chủ động bán OAuth token hoặc dữ liệu hồ sơ
+          của tài khoản đã kết nối.
         </p>
 
-        <h2>6. Retention</h2>
+        <h2>6. Thời gian lưu giữ</h2>
         <p>
-          Connection, synchronization, publishing, webhook, and analytics records are
-          retained while needed to operate the authorized integration and maintain security
-          history. Staged media may be retained while required for a requested draft or
-          publishing workflow and operational recovery. Expired OAuth state records are
-          automatically cleaned. Operational backups and audit records may be retained for
-          limited security and recovery purposes.
+          Dữ liệu kết nối, đồng bộ, đăng bài, webhook và analytics được giữ trong thời gian cần
+          thiết để vận hành integration và duy trì lịch sử bảo mật. Media staging có thể được
+          giữ khi cần cho draft/publishing và phục hồi vận hành. OAuth state hết hạn được tự
+          động dọn dẹp. Backup và audit có thể được giữ trong thời hạn phù hợp cho bảo mật và
+          phục hồi.
         </p>
 
-        <h2>7. User controls</h2>
+        <h2>7. Quyền kiểm soát của người dùng</h2>
         <p>
-          A connected account can be disconnected from the admin control plane, which requests
-          revocation of the current TikTok authorization. Users may also manage permissions
-          through TikTok where those controls are available.
+          Tài khoản đã kết nối có thể được ngắt khỏi trang quản trị, đồng thời ứng dụng yêu cầu
+          thu hồi authorization TikTok hiện tại. Người dùng cũng có thể quản lý quyền trực tiếp
+          trên TikTok khi nền tảng cung cấp cơ chế tương ứng.
         </p>
 
-        <h2>8. Changes</h2>
+        <h2>8. Thay đổi</h2>
         <p>
-          This policy may be updated when service functionality or platform requirements
-          change. The effective date above identifies the current version.
+          Chính sách có thể được cập nhật khi chức năng dịch vụ hoặc yêu cầu nền tảng thay đổi.
+          Ngày hiệu lực phía trên xác định phiên bản hiện tại.
         </p>
       </article>
       <SiteFooter />

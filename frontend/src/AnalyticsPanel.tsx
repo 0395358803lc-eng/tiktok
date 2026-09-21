@@ -50,7 +50,7 @@ export default function AnalyticsPanel({ accounts }: Props) {
     .filter((point) => typeof point.follower_count === "number")
     .map((point) => ({
       value: point.follower_count as number,
-      label: new Date(point.captured_at).toLocaleDateString(),
+      label: new Date(point.captured_at).toLocaleDateString("vi-VN"),
     })) ?? [];
 
   const canCollectAccountStats = Boolean(selected?.scopes.includes("user.info.stats"));
@@ -86,7 +86,7 @@ export default function AnalyticsPanel({ accounts }: Props) {
               key={range}
               onClick={() => setDays(range)}
             >
-              {range} days
+              {range} ngày
             </button>
           ))}
         </div>
@@ -105,8 +105,7 @@ export default function AnalyticsPanel({ accounts }: Props) {
         <div className="setup-box">
           <strong>Phân tích lịch sử cần thêm quyền TikTok</strong>
           <p>
-            Enable <code>user.info.stats</code> for account growth and <code>video.list</code>
-            for video performance. This panel never fabricates missing historical data.
+            Cấp quyền <code>user.info.stats</code> để theo dõi tăng trưởng tài khoản và <code>video.list</code> để theo dõi hiệu suất video. Hệ thống không tạo dữ liệu lịch sử giả.
           </p>
         </div>
       )}
@@ -130,7 +129,7 @@ export default function AnalyticsPanel({ accounts }: Props) {
             <div className="analytics-empty">
               <strong>Chưa đủ dữ liệu lịch sử.</strong>
               <span>
-                At least two snapshot thật are required before a growth line can be drawn.
+                Cần ít nhất hai snapshot thật trước khi có thể vẽ đường tăng trưởng.
               </span>
             </div>
           ) : (
@@ -160,7 +159,7 @@ export default function AnalyticsPanel({ accounts }: Props) {
                     <div className="top-video-placeholder">TT</div>
                   )}
                   <div>
-                    <strong>{video.title || "TikTok video"}</strong>
+                    <strong>{video.title || "Video TikTok"}</strong>
                     <span>
                       {formatMetric(video.view_count)} lượt xem · {formatDelta(video.view_delta)}
                     </span>
@@ -188,13 +187,13 @@ function DeltaCard({ label, value }: { label: string; value?: number | null }) {
 }
 
 function formatMetric(value?: number | null) {
-  return typeof value === "number" ? value.toLocaleString() : "—";
+  return typeof value === "number" ? value.toLocaleString("vi-VN") : "—";
 }
 
 function formatDelta(value?: number | null) {
   if (typeof value !== "number") return "—";
-  if (value > 0) return "+" + value.toLocaleString();
-  return value.toLocaleString();
+  if (value > 0) return "+" + value.toLocaleString("vi-VN");
+  return value.toLocaleString("vi-VN");
 }
 
 function MiniLineChart({ points }: { points: { value: number; label: string }[] }) {
@@ -214,8 +213,8 @@ function MiniLineChart({ points }: { points: { value: number; label: string }[] 
         <polyline points={coords} fill="none" vectorEffect="non-scaling-stroke" />
       </svg>
       <div className="mini-chart-legend">
-        <span>{points[0].label}: {points[0].value.toLocaleString()}</span>
-        <span>{points[points.length - 1].label}: {points[points.length - 1].value.toLocaleString()}</span>
+        <span>{points[0].label}: {points[0].value.toLocaleString("vi-VN")}</span>
+        <span>{points[points.length - 1].label}: {points[points.length - 1].value.toLocaleString("vi-VN")}</span>
       </div>
     </div>
   );

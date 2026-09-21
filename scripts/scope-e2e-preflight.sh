@@ -2,6 +2,7 @@
 set -euo pipefail
 
 ROOT="$(cd "$(dirname "${BASH_SOURCE[0]}")/.." && pwd)"
+export TIKTOK_SCOPES="user.info.basic,user.info.profile,user.info.stats,video.list,video.upload,video.publish"
 cd "$ROOT/backend"
 
 "$ROOT/.venv/bin/python" - <<'PY'

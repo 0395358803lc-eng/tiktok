@@ -1,6 +1,6 @@
 import { useEffect, useState } from "react";
 
-import App from "./App";
+import AdminLogin from "./AdminLogin";
 import DashboardShell from "./DashboardShell";
 import {
   api,
@@ -82,7 +82,7 @@ export default function AdminRoot() {
     );
   }
 
-  if (!auth.authenticated) return <App />;
+  if (!auth.authenticated) return <AdminLogin onLoggedIn={setAuth} />;
 
   async function connect() {
     if (!config?.configured) {

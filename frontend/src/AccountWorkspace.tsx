@@ -73,14 +73,14 @@ const groups: {
   {
     label: "Thiết lập bài đăng",
     items: [
-      { id: "caption", icon: "📝", label: "Caption" },
-      { id: "privacy", icon: "🔒", label: "Privacy" },
-      { id: "comment", icon: "💬", label: "Comment setting" },
+      { id: "caption", icon: "📝", label: "Chú thích" },
+      { id: "privacy", icon: "🔒", label: "Quyền xem" },
+      { id: "comment", icon: "💬", label: "Bình luận" },
       { id: "duet", icon: "👥", label: "Duet" },
       { id: "stitch", icon: "✂️", label: "Stitch" },
-      { id: "cover", icon: "🖼️", label: "Video cover" },
-      { id: "ai-label", icon: "🤖", label: "AI label" },
-      { id: "commercial", icon: "💰", label: "Commercial disclosure" },
+      { id: "cover", icon: "🖼️", label: "Ảnh bìa video" },
+      { id: "ai-label", icon: "🤖", label: "Nhãn AI" },
+      { id: "commercial", icon: "💰", label: "Khai báo thương mại" },
     ],
   },
   {
@@ -189,7 +189,7 @@ function renderSection(section: AccountSection, account: TikTokAccount): ReactNo
     return (
       <>
         <PostingSettingIntro section={section} />
-        <DirectPostPanel accounts={single} />
+        <DirectPostPanel accounts={single} initialMode={section === "photo-post" ? "PHOTO" : "VIDEO"} />
       </>
     );
   }
@@ -242,7 +242,7 @@ function AccountHeader({
             {account.is_verified && <span className="verified-badge">✓ Đã xác minh</span>}
           </div>
           <span>
-            {account.username ? "@" + account.username : "Account #" + account.id}
+            {account.username ? "@" + account.username : "Tài khoản #" + account.id}
           </span>
           <div className="workspace-account-meta">
             <span className={"badge " + (account.status === "CONNECTED" ? "badge-ok" : "")}>
@@ -306,9 +306,9 @@ function BasicProfile({ account }: { account: TikTokAccount }) {
         )}
         <div className="profile-field-grid">
           <ProfileField label="open_id" value={account.open_id} copy />
-          <ProfileField label="Display name" value={account.display_name} />
+          <ProfileField label="Tên hiển thị" value={account.display_name} />
           <ProfileField
-            label="Avatar URL"
+            label="URL ảnh đại diện"
             value={account.avatar_url}
             link
           />
@@ -343,11 +343,11 @@ function ExtendedProfile({ account }: { account: TikTokAccount }) {
       description="Các trường hồ sơ mở rộng mà TikTok cho phép với quyền user.info.profile."
     >
       <div className="profile-field-grid">
-        <ProfileField label="Username" value={account.username ? "@" + account.username : null} />
-        <ProfileField label="Bio" value={account.bio_description} />
+        <ProfileField label="Tên người dùng" value={account.username ? "@" + account.username : null} />
+        <ProfileField label="Tiểu sử" value={account.bio_description} />
         <ProfileField label="Link hồ sơ" value={account.profile_deep_link} link />
         <ProfileField
-          label="Verified"
+          label="Trạng thái xác minh"
           value={account.is_verified === true ? "Đã xác minh" : "Chưa xác minh"}
         />
       </div>
@@ -372,8 +372,8 @@ function AccountStats({ account }: { account: TikTokAccount }) {
       description="Số liệu tài khoản thật do TikTok trả về. Biểu đồ lịch sử nằm ngay bên dưới."
     >
       <div className="account-stat-grid">
-        <StatCard label="Follower" value={account.follower_count} />
-        <StatCard label="Following" value={account.following_count} />
+        <StatCard label="Người theo dõi" value={account.follower_count} />
+        <StatCard label="Đang theo dõi" value={account.following_count} />
         <StatCard label="Tổng lượt thích" value={account.likes_count} />
         <StatCard label="Số video" value={account.video_count} />
       </div>
@@ -398,19 +398,19 @@ function PostingSettingIntro({ section }: { section: AccountSection }) {
       api: "video.publish / video.upload",
     },
     caption: {
-      title: "Caption",
+      title: "Chú thích",
       description:
         "Thiết lập title/caption, hashtag và mention cho bài đang chuẩn bị đăng.",
       api: "Content Posting API",
     },
     privacy: {
-      title: "Privacy",
+      title: "Quyền xem",
       description:
         "Chỉ hiển thị các lựa chọn quyền xem mà Creator Info hiện tại của TikTok trả về.",
       api: "Content Posting API",
     },
     comment: {
-      title: "Comment setting",
+      title: "Bình luận",
       description:
         "Cho phép hoặc tắt bình luận cho chính bài đang chuẩn bị đăng.",
       api: "disable_comment",
@@ -428,19 +428,19 @@ function PostingSettingIntro({ section }: { section: AccountSection }) {
       api: "disable_stitch",
     },
     cover: {
-      title: "Video cover",
+      title: "Ảnh bìa video",
       description:
         "Chọn timestamp của video dùng làm ảnh cover. Giá trị không được vượt quá thời lượng video.",
       api: "video_cover_timestamp_ms",
     },
     "ai-label": {
-      title: "AI label",
+      title: "Nhãn AI",
       description:
         "Khai báo nội dung do AI tạo cho bài đang chuẩn bị đăng.",
       api: "is_aigc",
     },
     commercial: {
-      title: "Commercial disclosure",
+      title: "Khai báo thương mại",
       description:
         "Khai báo nội dung quảng bá thương hiệu của mình hoặc paid partnership.",
       api: "Content Posting API",

@@ -1,6 +1,7 @@
 import { useEffect, useMemo, useState } from "react";
 
 import { api, PublishJob, PublishSchedule, TikTokAccount } from "./api";
+import { jobStatusVi } from "./vi";
 
 type Props = {
   accounts: TikTokAccount[];
@@ -33,7 +34,7 @@ export default function SchedulerPanel({ accounts }: Props) {
       setReport(await api.publishSchedule(days, accountId));
       setError("");
     } catch (err) {
-      setError(err instanceof Error ? err.message : "Unable to load publishing schedule");
+      setError(err instanceof Error ? err.message : "Không thể tải lịch đăng");
     }
   }
 
@@ -43,10 +44,10 @@ export default function SchedulerPanel({ accounts }: Props) {
     setNotice("");
     try {
       await api.cancelPublishJob(job.id);
-      setNotice("Canceled scheduled job #" + job.id + ".");
+      setNotice("Đã hủy tác vụ đã lên lịch #" + job.id + ".");
       await loadSchedule();
     } catch (err) {
-      setError(err instanceof Error ? err.message : "Unable to cancel scheduled job");
+      setError(err instanceof Error ? err.message : "Không thể hủy tác vụ đã lên lịch");
     } finally {
       setBusyId(null);
     }
@@ -58,10 +59,10 @@ export default function SchedulerPanel({ accounts }: Props) {
     setNotice("");
     try {
       await api.retryPublishJob(job.id);
-      setNotice("Retry queued for job #" + job.id + ".");
+      setNotice("Đã đưa yêu cầu thử lại cho tác vụ #" + job.id + " vào hàng đợi.");
       await loadSchedule();
     } catch (err) {
-      setError(err instanceof Error ? err.message : "Unable to retry publish job");
+      setError(err instanceof Error ? err.message : "Không thể thử lại tác vụ đăng");
     } finally {
       setBusyId(null);
     }
@@ -70,12 +71,12 @@ export default function SchedulerPanel({ accounts }: Props) {
   async function reschedule(job: PublishJob) {
     const local = edits[job.id] || localInputValue(job.scheduled_at || job.next_attempt_at);
     if (!local) {
-      setError("Choose a new local date and time first.");
+      setError("Hãy chọn ngày giờ địa phương mới trước.");
       return;
     }
     const value = new Date(local);
     if (!Number.isFinite(value.getTime()) || value.getTime() <= Date.now() + 30_000) {
-      setError("New scheduled time must be at least 30 seconds in the future.");
+      setError("Thời gian mới phải cách hiện tại ít nhất 30 giây.");
       return;
     }
 
@@ -84,7 +85,7 @@ export default function SchedulerPanel({ accounts }: Props) {
     setNotice("");
     try {
       await api.reschedulePublishJob(job.id, value.toISOString());
-      setNotice("Rescheduled job #" + job.id + ".");
+      setNotice("Đã đổi lịch tác vụ #" + job.id + ".");
       setEdits((current) => {
         const next = { ...current };
         delete next[job.id];
@@ -92,7 +93,7 @@ export default function SchedulerPanel({ accounts }: Props) {
       });
       await loadSchedule();
     } catch (err) {
-      setError(err instanceof Error ? err.message : "Unable to reschedule publish job");
+      setError(err instanceof Error ? err.message : "Không thể đổi lịch tác vụ đăng");
     } finally {
       setBusyId(null);
     }
@@ -104,20 +105,21 @@ export default function SchedulerPanel({ accounts }: Props) {
     <section className="panel scheduler-panel">
       <div className="section-head">
         <div>
-          <span className="eyebrow">PUBLISHING QUEUE</span>
-          <h3>Publishing Schedule</h3>
+          <span className="eyebrow">HÀNG ĐỢI ĐĂNG BÀI</span>
+          <h3>Lịch đăng bài</h3>
         </div>
         <div className="scheduler-filters">
           <select
+            hidden={accounts.length <= 1}
             value={accountId ?? ""}
             onChange={(event) =>
               setAccountId(event.target.value ? Number(event.target.value) : undefined)
             }
           >
-            <option value="">All accounts</option>
+            <option value="">Tất cả tài khoản</option>
             {accounts.map((account) => (
               <option value={account.id} key={account.id}>
-                {account.display_name || account.username || "Account #" + account.id}
+                {account.display_name || account.username || "Tài khoản #" + account.id}
               </option>
             ))}
           </select>
@@ -128,22 +130,22 @@ export default function SchedulerPanel({ accounts }: Props) {
                 className={days === range ? "range-active" : "ghost"}
                 onClick={() => setDays(range)}
               >
-                {range} days
+                {range} ngày
               </button>
             ))}
           </div>
-          <button className="ghost" onClick={loadSchedule}>Refresh</button>
+          <button className="ghost" onClick={loadSchedule}>Làm mới</button>
         </div>
       </div>
 
       <div className="scheduler-summary">
-        <Summary label="Total" value={report?.total ?? 0} />
-        <Summary label="Scheduled" value={report?.scheduled ?? 0} />
-        <Summary label="Ready" value={report?.ready ?? 0} />
-        <Summary label="Running" value={report?.running ?? 0} />
-        <Summary label="Completed" value={report?.completed ?? 0} />
-        <Summary label="Failed" value={report?.failed ?? 0} />
-        <Summary label="Canceled" value={report?.canceled ?? 0} />
+        <Summary label="Tổng" value={report?.total ?? 0} />
+        <Summary label="Đã lên lịch" value={report?.scheduled ?? 0} />
+        <Summary label="Sẵn sàng" value={report?.ready ?? 0} />
+        <Summary label="Đang chạy" value={report?.running ?? 0} />
+        <Summary label="Hoàn tất" value={report?.completed ?? 0} />
+        <Summary label="Thất bại" value={report?.failed ?? 0} />
+        <Summary label="Đã hủy" value={report?.canceled ?? 0} />
       </div>
 
       {notice && <div className="notice">{notice}</div>}
@@ -151,9 +153,9 @@ export default function SchedulerPanel({ accounts }: Props) {
 
       {jobs.length === 0 ? (
         <div className="empty-state">
-          <strong>No scheduled or retry jobs in this window.</strong>
+          <strong>Không có tác vụ lên lịch hoặc thử lại trong khoảng thời gian này.</strong>
           <span>
-            Use Direct Post Studio and enable Schedule to place a job on this queue.
+            Dùng trình đăng trực tiếp và bật Lên lịch để đưa tác vụ vào hàng đợi này.
           </span>
         </div>
       ) : (
@@ -173,15 +175,15 @@ export default function SchedulerPanel({ accounts }: Props) {
                 <div className="scheduler-row-main">
                   <strong>
                     #{job.id} · {job.media_type} ·{" "}
-                    {account?.display_name || account?.username || "Account #" + job.account_id}
+                    {account?.display_name || account?.username || "Tài khoản #" + job.account_id}
                   </strong>
                   <span>
                     {effectiveAt
-                      ? new Date(effectiveAt).toLocaleString()
-                      : "No scheduled time"}
+                      ? new Date(effectiveAt).toLocaleString("vi-VN")
+                      : "Chưa có thời gian lên lịch"}
                   </span>
                   <span>
-                    Remote: {job.status} · Queue: {job.schedule_status} · Retry{" "}
+                    TikTok: {jobStatusVi(job.status)} · Hàng đợi: {jobStatusVi(job.schedule_status)} · Thử lại{" "}
                     {job.retry_count}/{job.max_retries}
                   </span>
                   {job.fail_reason && (
@@ -210,14 +212,14 @@ export default function SchedulerPanel({ accounts }: Props) {
                         disabled={busyId === job.id}
                         onClick={() => reschedule(job)}
                       >
-                        Reschedule
+                        Đổi lịch
                       </button>
                       <button
                         className="ghost danger"
                         disabled={busyId === job.id}
                         onClick={() => cancel(job)}
                       >
-                        Cancel
+                        Hủy
                       </button>
                     </>
                   )}
@@ -227,12 +229,12 @@ export default function SchedulerPanel({ accounts }: Props) {
                       disabled={busyId === job.id}
                       onClick={() => retry(job)}
                     >
-                      Retry
+                      Thử lại
                     </button>
                   )}
                   {!editable && !retryable && (
                     <span className={"scheduler-state state-" + job.schedule_status.toLowerCase()}>
-                      {job.schedule_status}
+                      {jobStatusVi(job.schedule_status)}
                     </span>
                   )}
                 </div>
@@ -249,7 +251,7 @@ function Summary({ label, value }: { label: string; value: number }) {
   return (
     <div className="scheduler-summary-card">
       <span>{label}</span>
-      <strong>{value.toLocaleString()}</strong>
+      <strong>{value.toLocaleString("vi-VN")}</strong>
     </div>
   );
 }

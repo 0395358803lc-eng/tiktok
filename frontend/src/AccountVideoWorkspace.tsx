@@ -215,7 +215,7 @@ function VideoDetail({ video }: { video: TikTokVideo }) {
           }
         />
         <Field label="URL chia sẻ" value={video.share_url} link />
-        <Field label="Embed link" value={video.embed_link} link />
+        <Field label="Liên kết nhúng" value={video.embed_link} link />
         <Field label="Nhãn AI" value={video.is_aigc ? "Có" : "Không / chưa có dữ liệu"} />
         <Field label="Đồng bộ gần nhất" value={new Date(video.synced_at).toLocaleString("vi-VN")} />
       </div>

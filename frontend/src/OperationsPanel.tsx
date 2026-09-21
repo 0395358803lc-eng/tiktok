@@ -45,7 +45,7 @@ export default function OperationsPanel({ accounts, onChanged }: Props) {
       setReadiness(gate);
       setError("");
     } catch (err) {
-      setError(err instanceof Error ? err.message : "Unable to load operations dashboard");
+      setError(err instanceof Error ? err.message : "Không thể tải bảng điều hành hệ thống");
     }
   }
 
@@ -64,7 +64,7 @@ export default function OperationsPanel({ accounts, onChanged }: Props) {
 
   async function runBulk() {
     if (selected.length === 0) {
-      setError("Select at least one TikTok account.");
+      setError("Hãy chọn ít nhất một tài khoản TikTok.");
       return;
     }
 
@@ -76,7 +76,7 @@ export default function OperationsPanel({ accounts, onChanged }: Props) {
       setBulkResult(result);
       await Promise.all([load(), onChanged()]);
     } catch (err) {
-      setError(err instanceof Error ? err.message : "Bulk operation failed");
+      setError(err instanceof Error ? err.message : "Thao tác hàng loạt thất bại");
     } finally {
       setBusy(false);
     }
@@ -89,24 +89,24 @@ export default function OperationsPanel({ accounts, onChanged }: Props) {
       <section className="panel operations-panel">
         <div className="section-head">
           <div>
-            <span className="eyebrow">MULTI-ACCOUNT OPERATIONS</span>
-            <h3>Operations Control Center</h3>
+            <span className="eyebrow">VẬN HÀNH NHIỀU TÀI KHOẢN</span>
+            <h3>Trung tâm điều hành</h3>
           </div>
           <button className="ghost" disabled={busy} onClick={load}>
-            {busy ? "Working…" : "Refresh dashboard"}
+            {busy ? "Đang xử lý…" : "Làm mới bảng điều hành"}
           </button>
         </div>
 
         <div className="ops-summary-grid">
-          <OpsMetric label="Accounts" value={summary?.accounts_total ?? 0} />
-          <OpsMetric label="Connected" value={summary?.connected_accounts ?? 0} />
-          <OpsMetric label="Need attention" value={summary?.issue_accounts ?? 0} />
-          <OpsMetric label="Re-auth" value={summary?.reauth_accounts ?? 0} />
-          <OpsMetric label="Scheduled" value={summary?.scheduled_posts ?? 0} />
-          <OpsMetric label="Running" value={summary?.running_posts ?? 0} />
-          <OpsMetric label="Failed posts" value={summary?.failed_posts ?? 0} />
+          <OpsMetric label="Tài khoản" value={summary?.accounts_total ?? 0} />
+          <OpsMetric label="Đã kết nối" value={summary?.connected_accounts ?? 0} />
+          <OpsMetric label="Cần chú ý" value={summary?.issue_accounts ?? 0} />
+          <OpsMetric label="Cần cấp lại quyền" value={summary?.reauth_accounts ?? 0} />
+          <OpsMetric label="Đã lên lịch" value={summary?.scheduled_posts ?? 0} />
+          <OpsMetric label="Đang chạy" value={summary?.running_posts ?? 0} />
+          <OpsMetric label="Bài đăng lỗi" value={summary?.failed_posts ?? 0} />
           <OpsMetric
-            label="Webhook errors"
+            label="Lỗi Webhook"
             value={summary?.error_webhooks ?? 0}
           />
         </div>
@@ -118,18 +118,18 @@ export default function OperationsPanel({ accounts, onChanged }: Props) {
               checked={rows.length > 0 && selected.length === rows.length}
               onChange={toggleAll}
             />
-            Select all
+            Chọn tất cả
           </label>
           <select
             value={bulkAction}
             onChange={(event) => setBulkAction(event.target.value as BulkAction)}
           >
-            <option value="REFRESH_TOKENS">Refresh tokens</option>
-            <option value="SYNC_PROFILE">Sync profiles</option>
-            <option value="SYNC_VIDEOS">Sync latest videos</option>
+            <option value="REFRESH_TOKENS">Làm mới token</option>
+            <option value="SYNC_PROFILE">Đồng bộ hồ sơ</option>
+            <option value="SYNC_VIDEOS">Đồng bộ video mới nhất</option>
           </select>
           <button disabled={busy || selected.length === 0} onClick={runBulk}>
-            {busy ? "Running…" : "Run on " + selected.length + " account(s)"}
+            {busy ? "Đang chạy…" : "Chạy trên " + selected.length + " tài khoản"}
           </button>
         </div>
 
@@ -138,7 +138,7 @@ export default function OperationsPanel({ accounts, onChanged }: Props) {
         {bulkResult && (
           <div className="bulk-result">
             <strong>
-              {bulkResult.action}: {bulkResult.succeeded} succeeded / {bulkResult.failed} failed
+              {bulkResult.action}: {bulkResult.succeeded} thành công / {bulkResult.failed} thất bại
             </strong>
             <div>
               {bulkResult.results.map((item) => (
@@ -155,8 +155,8 @@ export default function OperationsPanel({ accounts, onChanged }: Props) {
 
         {rows.length === 0 ? (
           <div className="empty-state">
-            <strong>No TikTok account is connected.</strong>
-            <span>Connect an account to populate the operations dashboard.</span>
+            <strong>Chưa có tài khoản TikTok nào được kết nối.</strong>
+            <span>Kết nối tài khoản để hiển thị dữ liệu vận hành.</span>
           </div>
         ) : (
           <div className="ops-table-wrap">
@@ -164,15 +164,15 @@ export default function OperationsPanel({ accounts, onChanged }: Props) {
               <thead>
                 <tr>
                   <th />
-                  <th>Account</th>
-                  <th>Health</th>
-                  <th>Scopes</th>
+                  <th>Tài khoản</th>
+                  <th>Sức khỏe</th>
+                  <th>Quyền</th>
                   <th>Access token</th>
                   <th>Refresh token</th>
-                  <th>Profile sync</th>
-                  <th>Videos</th>
-                  <th>Publishing</th>
-                  <th>Issues</th>
+                  <th>Đồng bộ hồ sơ</th>
+                  <th>Video</th>
+                  <th>Đăng bài</th>
+                  <th>Vấn đề</th>
                 </tr>
               </thead>
               <tbody>
@@ -192,7 +192,7 @@ export default function OperationsPanel({ accounts, onChanged }: Props) {
                           {row.display_name ||
                             row.username ||
                             account?.display_name ||
-                            "Account #" + row.account_id}
+                            "Tài khoản #" + row.account_id}
                         </strong>
                         <span>#{row.account_id} · {row.status}</span>
                       </td>
@@ -205,8 +205,8 @@ export default function OperationsPanel({ accounts, onChanged }: Props) {
                         <strong>{row.scopes.length}</strong>
                         <span>
                           {row.missing_configured_scopes.length
-                            ? row.missing_configured_scopes.length + " missing"
-                            : "Complete"}
+                            ? row.missing_configured_scopes.length + " thiếu"
+                            : "Đầy đủ"}
                         </span>
                       </td>
                       <td>
@@ -220,8 +220,8 @@ export default function OperationsPanel({ accounts, onChanged }: Props) {
                       <td>
                         <strong>
                           {row.profile_age_hours == null
-                            ? "Never"
-                            : row.profile_age_hours.toFixed(1) + "h ago"}
+                            ? "Chưa từng"
+                            : row.profile_age_hours.toFixed(1) + " giờ trước"}
                         </strong>
                       </td>
                       <td>
@@ -229,18 +229,18 @@ export default function OperationsPanel({ accounts, onChanged }: Props) {
                       </td>
                       <td>
                         <strong>
-                          {row.scheduled_posts} scheduled · {row.running_posts} running
+                          {row.scheduled_posts} đã lên lịch · {row.running_posts} đang chạy
                         </strong>
                         <span>
-                          {row.failed_posts} failed posts · {row.failed_drafts} failed drafts
+                          {row.failed_posts} thất bại posts · {row.failed_drafts} thất bại drafts
                         </span>
                       </td>
                       <td>
                         {row.issues.length === 0 ? (
-                          <span className="ops-no-issues">No issues</span>
+                          <span className="ops-no-issues">Không có vấn đề</span>
                         ) : (
                           <details>
-                            <summary>{row.issues.length} issue(s)</summary>
+                            <summary>{row.issues.length} vấn đề</summary>
                             <div className="ops-issues">
                               {row.issues.map((issue) => (
                                 <span key={issue}>{issue}</span>
@@ -261,8 +261,8 @@ export default function OperationsPanel({ accounts, onChanged }: Props) {
       <section className="panel readiness-panel">
         <div className="section-head">
           <div>
-            <span className="eyebrow">PRODUCTION GATE</span>
-            <h3>Production Readiness</h3>
+            <span className="eyebrow">CỔNG KIỂM TRA PRODUCTION</span>
+            <h3>Mức sẵn sàng Production</h3>
           </div>
           <span
             className={
@@ -270,14 +270,14 @@ export default function OperationsPanel({ accounts, onChanged }: Props) {
               (readiness?.status === "READY" ? "ready" : "blocked")
             }
           >
-            {readiness?.status ?? "CHECKING"}
+            {readiness?.status ?? "ĐANG KIỂM TRA"}
           </span>
         </div>
 
         <div className="readiness-summary">
-          <OpsMetric label="PASS" value={readiness?.pass_count ?? 0} />
-          <OpsMetric label="WARN" value={readiness?.warn_count ?? 0} />
-          <OpsMetric label="FAIL" value={readiness?.fail_count ?? 0} />
+          <OpsMetric label="ĐẠT" value={readiness?.pass_count ?? 0} />
+          <OpsMetric label="CẢNH BÁO" value={readiness?.warn_count ?? 0} />
+          <OpsMetric label="LỖI" value={readiness?.fail_count ?? 0} />
         </div>
 
         <div className="readiness-list">
@@ -308,7 +308,7 @@ function OpsMetric({ label, value }: { label: string; value: number }) {
 }
 
 function formatMinutes(value: number) {
-  if (value < 0) return "Expired";
+  if (value < 0) return "Đã hết hạn";
   if (value < 60) return value + "m";
   if (value < 1440) return Math.floor(value / 60) + "h";
   return Math.floor(value / 1440) + "d";

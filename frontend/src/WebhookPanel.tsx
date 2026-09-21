@@ -25,7 +25,7 @@ export default function WebhookPanel() {
       setEvents(await api.webhookEvents(100));
       setError("");
     } catch (err) {
-      setError(err instanceof Error ? err.message : "Unable to load webhook events");
+      setError(err instanceof Error ? err.message : "Không thể tải sự kiện Webhook");
     } finally {
       setBusy(false);
     }
@@ -36,7 +36,7 @@ export default function WebhookPanel() {
       await navigator.clipboard.writeText(callbackUrl);
       setNotice("Webhook callback copied.");
     } catch {
-      setNotice("Copy failed. Select the callback URL manually.");
+      setNotice("Sao chép thất bại. Select the callback URL manually.");
     }
   }
 
@@ -44,41 +44,41 @@ export default function WebhookPanel() {
     <section className="panel webhook-panel">
       <div className="section-head">
         <div>
-          <span className="eyebrow">WEBHOOKS</span>
-          <h3>Realtime TikTok events</h3>
+          <span className="eyebrow">WEBHOOK</span>
+          <h3>Sự kiện TikTok theo thời gian thực</h3>
         </div>
         <button className="ghost" disabled={busy} onClick={loadEvents}>
-          {busy ? "Refreshing…" : "Refresh events"}
+          {busy ? "Đang làm mới…" : "Làm mới sự kiện"}
         </button>
       </div>
 
       <div className="webhook-config-card">
         <div>
-          <strong>Callback URL</strong>
+          <strong>URL callback</strong>
           <code>{callbackUrl}</code>
           <span>
             Add this HTTPS URL in TikTok Developer Portal → Development configuration → Webhooks.
           </span>
         </div>
-        <button className="ghost" onClick={copyCallback}>Copy URL</button>
+        <button className="ghost" onClick={copyCallback}>Sao chép URL</button>
       </div>
 
       <div className="webhook-security-grid">
         <div>
-          <span>Signature verification</span>
+          <span>Xác minh chữ ký</span>
           <strong>HMAC-SHA256</strong>
         </div>
         <div>
-          <span>Replay protection</span>
-          <strong>Timestamp window</strong>
+          <span>Chống replay</span>
+          <strong>Cửa sổ timestamp</strong>
         </div>
         <div>
-          <span>Duplicate handling</span>
+          <span>Xử lý trùng lặp</span>
           <strong>Idempotent</strong>
         </div>
         <div>
-          <span>Processing</span>
-          <strong>Async worker</strong>
+          <span>Xử lý</span>
+          <strong>Worker bất đồng bộ</strong>
         </div>
       </div>
 
@@ -87,7 +87,7 @@ export default function WebhookPanel() {
 
       {events.length === 0 ? (
         <div className="empty-state">
-          <strong>No TikTok webhook has been received yet.</strong>
+          <strong>Chưa nhận được Webhook TikTok nào.</strong>
           <span>
             Use TikTok Developer Portal's Test URL after configuring the callback.
           </span>
@@ -100,7 +100,7 @@ export default function WebhookPanel() {
                 <strong>{event.event_type}</strong>
                 <span>{event.user_open_id || "No user open_id"}</span>
                 <span>
-                  Received {new Date(event.received_at).toLocaleString()}
+                  Received {new Date(event.received_at).toLocaleString("vi-VN")}
                 </span>
                 {event.error_detail && (
                   <span className="draft-failure">{event.error_detail}</span>
