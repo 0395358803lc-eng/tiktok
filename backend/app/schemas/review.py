@@ -24,7 +24,7 @@ class ReviewCheck(BaseModel):
 
 
 class ReviewPackageReport(BaseModel):
-    status: Literal["READY_FOR_REVIEW", "NOT_READY_FOR_REVIEW"]
+    status: Literal["READY_FOR_REVIEW", "READY_FOR_MANUAL_VERIFICATION", "NOT_READY_FOR_REVIEW"]
     products: list[str]
     scope_matrix: list[ScopeReviewItem]
     checks: list[ReviewCheck]
