@@ -83,6 +83,7 @@ export function checkStatusVi(status: string) {
 export function reviewStatusVi(status: string) {
   const map: Record<string, string> = {
     READY_FOR_REVIEW: "Sẵn sàng gửi review",
+    READY_FOR_MANUAL_VERIFICATION: "Sẵn sàng kiểm tra thủ công",
     NOT_READY_FOR_REVIEW: "Chưa sẵn sàng gửi review",
     CHECKING: "Đang kiểm tra",
   };
