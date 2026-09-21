@@ -101,3 +101,22 @@ Do not mark a scope PASS if:
 - TikTok returned an authorization/scope error;
 - only local database/UI behavior was tested;
 - the test bypassed TikTok Developer Portal restrictions.
+
+
+## Automatic Review Package evidence gate
+
+The Review Package must not infer LIVE PASS from an early/intermediate state.
+
+- `user.info.basic`: requires a connected account with a successful profile sync and real basic identity data.
+- `user.info.profile`: requires at least one persisted extended-profile field after sync.
+- `user.info.stats`: requires at least two snapshots containing real statistic values; a single snapshot is insufficient for historical/delta evidence.
+- `video.list`: requires persisted TikTok video rows plus a successful video sync/refresh audit event.
+- `video.upload`: requires a real `publish_id` and job state `SEND_TO_USER_INBOX` or `PUBLISH_COMPLETE`; `SUBMITTED` alone is not PASS.
+- `video.publish`: requires a real `publish_id`, `PUBLISH_COMPLETE`, and completed scheduler state; `SUBMITTED` alone is not PASS.
+- Webhook database rows alone do not prove that TikTok Developer Portal Test URL was used. Portal evidence remains a manual verification item.
+
+Overall review status uses three states:
+
+1. `NOT_READY_FOR_REVIEW` — at least one automatic requirement is failing.
+2. `READY_FOR_MANUAL_VERIFICATION` — automatic requirements pass, but Developer Portal/manual evidence still needs confirmation.
+3. `READY_FOR_REVIEW` — no automatic failure and no outstanding manual verification item.

@@ -1,13 +1,16 @@
 from pathlib import Path
 
 from fastapi import FastAPI
-from sqlalchemy import func, select
+from sqlalchemy import func, or_, select
 from sqlalchemy.orm import Session
 
 from app.core.settings import ROOT_DIR, Settings
 from app.models.analytics import AccountStatSnapshot
 from app.models.audit_event import AuditEvent
 from app.models.tiktok_account import TikTokAccount
+from app.models.tiktok_draft_job import TikTokDraftJob
+from app.models.tiktok_publish_job import TikTokPublishJob
+from app.models.tiktok_video import TikTokVideo
 from app.models.tiktok_webhook_event import TikTokWebhookEvent
 from app.services.tiktok.scopes import configured_personal_scopes, normalize_scopes
 
@@ -96,42 +99,115 @@ def _live_scope_evidence(
 
     account_ids = [account.id for account in granted]
 
-    if scope in {"user.info.basic", "user.info.profile"}:
-        count = sum(account.profile_synced_at is not None for account in granted)
+    if scope == "user.info.basic":
+        count = sum(
+            account.profile_synced_at is not None
+            and bool(account.display_name or account.avatar_url)
+            for account in granted
+        )
         return (
             count > 0,
-            f"{count} tài khoản đã đồng bộ hồ sơ thành công từ TikTok.",
+            f"{count} tài khoản có hồ sơ cơ bản thật đã đồng bộ từ TikTok.",
+        )
+
+    if scope == "user.info.profile":
+        count = sum(
+            account.profile_synced_at is not None
+            and (
+                account.username is not None
+                or account.bio_description is not None
+                or account.profile_deep_link is not None
+                or account.is_verified is not None
+            )
+            for account in granted
+        )
+        return (
+            count > 0,
+            f"{count} tài khoản có ít nhất một trường hồ sơ mở rộng thật đã lưu.",
         )
 
     if scope == "user.info.stats":
-        count = db.scalar(
+        rows = db.execute(
+            select(
+                AccountStatSnapshot.account_id,
+                func.count(AccountStatSnapshot.id),
+            )
+            .where(
+                AccountStatSnapshot.account_id.in_(account_ids),
+                or_(
+                    AccountStatSnapshot.follower_count.is_not(None),
+                    AccountStatSnapshot.following_count.is_not(None),
+                    AccountStatSnapshot.likes_count.is_not(None),
+                    AccountStatSnapshot.video_count.is_not(None),
+                ),
+            )
+            .group_by(AccountStatSnapshot.account_id)
+        ).all()
+        best_count = max((int(row[1]) for row in rows), default=0)
+        return (
+            best_count >= 2,
+            (
+                f"Tài khoản tốt nhất có {best_count} snapshot thống kê thật; "
+                "cần ít nhất 2 snapshot để chứng minh dữ liệu lịch sử/delta."
+            ),
+        )
+
+    if scope == "video.list":
+        video_count = db.scalar(
             select(func.count())
-            .select_from(AccountStatSnapshot)
-            .where(AccountStatSnapshot.account_id.in_(account_ids))
+            .select_from(TikTokVideo)
+            .where(TikTokVideo.account_id.in_(account_ids))
         ) or 0
-        return count > 0, f"{count} snapshot thống kê tài khoản đã lưu."
-
-    event_types = {
-        "video.list": ("VIDEOS_SYNCED", "VIDEOS_REFRESHED"),
-        "video.upload": (
-            "DRAFT_SUBMITTED",
-            "DRAFT_INBOX_DELIVERED",
-            "DRAFT_PUBLISH_COMPLETE",
-        ),
-        "video.publish": ("DIRECT_POST_SUBMITTED", "DIRECT_POST_COMPLETE"),
-    }.get(scope)
-
-    if event_types:
-        count = db.scalar(
+        audit_count = db.scalar(
             select(func.count())
             .select_from(AuditEvent)
             .where(
                 AuditEvent.account_id.in_(account_ids),
-                AuditEvent.event_type.in_(event_types),
+                AuditEvent.event_type.in_(("VIDEOS_SYNCED", "VIDEOS_REFRESHED")),
                 AuditEvent.status != "ERROR",
             )
         ) or 0
-        return count > 0, f"{count} sự kiện API live thành công đã lưu."
+        return (
+            video_count > 0 and audit_count > 0,
+            f"{video_count} video thật đã lưu; {audit_count} sự kiện đồng bộ/refresh thành công.",
+        )
+
+    if scope == "video.upload":
+        completed = db.scalar(
+            select(func.count())
+            .select_from(TikTokDraftJob)
+            .where(
+                TikTokDraftJob.account_id.in_(account_ids),
+                TikTokDraftJob.publish_id.is_not(None),
+                TikTokDraftJob.status.in_(("SEND_TO_USER_INBOX", "PUBLISH_COMPLETE")),
+            )
+        ) or 0
+        return (
+            completed > 0,
+            (
+                f"{completed} draft có publish_id và đã tới TikTok Inbox/hoàn tất; "
+                "trạng thái SUBMITTED đơn thuần không được tính PASS."
+            ),
+        )
+
+    if scope == "video.publish":
+        completed = db.scalar(
+            select(func.count())
+            .select_from(TikTokPublishJob)
+            .where(
+                TikTokPublishJob.account_id.in_(account_ids),
+                TikTokPublishJob.publish_id.is_not(None),
+                TikTokPublishJob.status == "PUBLISH_COMPLETE",
+                TikTokPublishJob.schedule_status == "COMPLETED",
+            )
+        ) or 0
+        return (
+            completed > 0,
+            (
+                f"{completed} Direct Post có publish_id và PUBLISH_COMPLETE; "
+                "trạng thái SUBMITTED đơn thuần không được tính PASS."
+            ),
+        )
 
     return False, "Chưa định nghĩa bằng chứng live cho scope này."
 
@@ -192,7 +268,21 @@ def build_review_package(
     redirect = settings.tiktok_redirect_uri or ""
     verification_files = list((ROOT_DIR / "frontend" / "public").glob("tiktok*.txt"))
     webhook_events = db.scalar(
-        select(func.count()).select_from(TikTokWebhookEvent)
+        select(func.count())
+        .select_from(TikTokWebhookEvent)
+        .where(
+            TikTokWebhookEvent.status == "PROCESSED",
+            TikTokWebhookEvent.event_type.in_(
+                (
+                    "authorization.removed",
+                    "post.publish.failed",
+                    "post.publish.complete",
+                    "post.publish.inbox_delivered",
+                    "post.publish.publicly_available",
+                    "post.publish.no_longer_publicaly_available",
+                )
+            ),
+        )
     ) or 0
 
     demo_files: list[Path] = []
@@ -294,8 +384,12 @@ def build_review_package(
     add(
         "webhook_test",
         "Bằng chứng Webhook Test URL từ TikTok Developer Portal",
-        "PASS" if webhook_events > 0 else "FAIL",
-        f"{webhook_events} sự kiện Webhook thật đã lưu; self-test nội bộ không được giữ làm bằng chứng.",
+        "MANUAL",
+        (
+            f"{webhook_events} sự kiện TikTok đã xử lý có kiểu hợp lệ trong DB. "
+            "Vẫn phải xác nhận thủ công Test URL/ảnh hoặc video trong Developer Portal "
+            "vì DB không thể chứng minh nguồn gửi là giao diện TikTok Portal."
+        ),
     )
     add(
         "demo_video",
@@ -317,8 +411,16 @@ def build_review_package(
     )
 
     fail_count = sum(1 for check in checks if check["status"] == "FAIL")
+    manual_count = sum(1 for check in checks if check["status"] == "MANUAL")
+    if fail_count > 0:
+        review_status = "NOT_READY_FOR_REVIEW"
+    elif manual_count > 0:
+        review_status = "READY_FOR_MANUAL_VERIFICATION"
+    else:
+        review_status = "READY_FOR_REVIEW"
+
     return {
-        "status": "READY_FOR_REVIEW" if fail_count == 0 else "NOT_READY_FOR_REVIEW",
+        "status": review_status,
         "products": [
             "Login Kit",
             "User Info",
