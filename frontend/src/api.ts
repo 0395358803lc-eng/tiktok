@@ -273,6 +273,37 @@ export type ProductionReadinessReport = {
   checks: ReadinessCheck[];
 };
 
+export type ScopeReviewItem = {
+  scope: string;
+  product: string;
+  feature: string;
+  configured: boolean;
+  connected_accounts_with_scope: number;
+  code_implemented: boolean;
+  evidence_routes: string[];
+  status: "PASS" | "BLOCKED" | "NOT_CONFIGURED";
+};
+
+export type ReviewCheck = {
+  key: string;
+  label: string;
+  status: "PASS" | "WARN" | "FAIL" | "MANUAL";
+  detail: string;
+};
+
+export type ReviewPackageReport = {
+  status: "READY_FOR_REVIEW" | "NOT_READY_FOR_REVIEW";
+  products: string[];
+  scope_matrix: ScopeReviewItem[];
+  checks: ReviewCheck[];
+  demo_video_plan: string[];
+  website_url: string;
+  terms_url: string;
+  privacy_url: string;
+  oauth_redirect_url: string;
+  webhook_url: string;
+};
+
 export type AuditEvent = {
   id: number;
   event_type: string;
@@ -436,6 +467,7 @@ export const api = {
   operationsSummary: () => json<OperationsSummary>("/api/operations/summary"),
   productionReadiness: () =>
     json<ProductionReadinessReport>("/api/operations/production-readiness"),
+  reviewPackage: () => json<ReviewPackageReport>("/api/operations/review-package"),
   bulkOperation: (
     action: "REFRESH_TOKENS" | "SYNC_PROFILE" | "SYNC_VIDEOS",
     accountIds: number[],

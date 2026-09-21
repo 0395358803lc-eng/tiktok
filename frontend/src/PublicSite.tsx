@@ -58,16 +58,17 @@ export function PublicHome() {
         </div>
         <div className="public-card">
           <span className="eyebrow">CURRENT INTEGRATION</span>
-          <h2>Login Kit</h2>
+          <h2>Official account authorization</h2>
           <p>
             Users authorize access on TikTok. The service does not request or collect
-            TikTok passwords. The current permission is limited to basic profile access.
+            TikTok passwords. Features are activated only when the application has the
+            corresponding TikTok product approval and the user grants the required scope.
           </p>
           <div className="public-facts">
             <span>OAuth 2.0 authorization</span>
-            <span>Basic profile data</span>
+            <span>Profile and analytics tools</span>
+            <span>Video library and publishing workflows</span>
             <span>Server-side token storage</span>
-            <span>User-controlled disconnect</span>
           </div>
         </div>
       </section>
@@ -78,19 +79,42 @@ export function PublicHome() {
         <div className="feature-grid">
           <article>
             <h3>Account connection</h3>
-            <p>Connect each account separately through TikTok Login Kit.</p>
+            <p>Connect each account separately through TikTok Login Kit and explicit consent.</p>
           </article>
           <article>
-            <h3>Profile synchronization</h3>
-            <p>Retrieve the authorized account's display name and avatar.</p>
+            <h3>Profile and statistics</h3>
+            <p>
+              Synchronize authorized profile fields and account statistics when the approved
+              scopes are granted.
+            </p>
           </article>
           <article>
-            <h3>Token lifecycle</h3>
-            <p>Refresh authorized access server-side without exposing tokens in the browser.</p>
+            <h3>Video library and analytics</h3>
+            <p>
+              Read an authorized account's public videos, refresh metrics, and build historical
+              performance snapshots when video access is approved.
+            </p>
           </article>
           <article>
-            <h3>Audit history</h3>
-            <p>Track account connection, profile sync, refresh, and disconnect events.</p>
+            <h3>Draft upload</h3>
+            <p>
+              Send authorized video or photo content to TikTok Inbox as a draft for the creator
+              to finish editing and posting.
+            </p>
+          </article>
+          <article>
+            <h3>Direct Post and scheduling</h3>
+            <p>
+              Prepare Direct Post metadata, respect current creator settings, and schedule
+              approved publishing jobs through the Content Posting API.
+            </p>
+          </article>
+          <article>
+            <h3>Operations and audit history</h3>
+            <p>
+              Monitor tokens, scopes, webhooks, publishing status, backups, and account events
+              from one control plane.
+            </p>
           </article>
         </div>
       </section>
@@ -142,9 +166,12 @@ export function TermsPage() {
         <h2>1. Service</h2>
         <p>
           TH TikTok Manager provides tools for users to connect TikTok accounts they are
-          authorized to control, view basic account information, maintain OAuth connections,
-          and revoke those connections. Access to TikTok features is subject to TikTok's own
-          terms, policies, availability, and approval requirements.
+          authorized to control, synchronize permitted profile and analytics data, manage
+          authorized public-video information, stage draft uploads, prepare Direct Post jobs,
+          schedule publishing operations, maintain OAuth connections, and revoke those
+          connections. Each feature depends on the TikTok products and scopes approved for the
+          application and granted by the user. Access to TikTok features is subject to TikTok's
+          own terms, policies, availability, and approval requirements.
         </p>
 
         <h2>2. Authorized use</h2>
@@ -211,8 +238,13 @@ export function PrivacyPage() {
         <h2>1. Information processed</h2>
         <p>
           When a user authorizes TikTok access, the service may process the TikTok account
-          identifier, display name, avatar URL, granted scopes, OAuth access token, refresh
-          token, token expiration times, connection status, and synchronization timestamps.
+          identifier, display name, avatar URL, additional profile fields, account statistics,
+          public-video metadata and metrics, granted scopes, OAuth access token, refresh token,
+          token expiration times, connection status, and synchronization timestamps when the
+          corresponding permissions are granted. When a user uses content workflows, the
+          service may also process staged media metadata, user-supplied photo URLs, captions,
+          privacy and interaction selections, draft/direct-post job state, scheduling metadata,
+          TikTok publish identifiers, public post identifiers, and webhook events.
           Administrative login and account-management events are also recorded for security
           and operational auditing.
         </p>
@@ -226,17 +258,21 @@ export function PrivacyPage() {
 
         <h2>3. Purposes</h2>
         <p>
-          Information is used to maintain authorized account connections, display basic
-          profile information, refresh permitted access, support disconnect/revocation,
-          diagnose service health, and maintain a security audit trail.
+          Information is used to maintain authorized account connections, display permitted
+          profile and statistics, synchronize public-video data, build historical analytics,
+          execute user-requested draft/direct-post workflows, operate publishing schedules,
+          process TikTok webhook updates, refresh permitted access, support
+          disconnect/revocation, diagnose service health, and maintain a security audit trail.
         </p>
 
         <h2>4. Storage and security</h2>
         <p>
           OAuth access and refresh tokens are stored on the server in encrypted form.
-          Authorization codes, OAuth state values, raw tokens, and administrator passwords
-          are not intentionally exposed in the application UI or written to application
-          access logs. Administrative sessions use server-backed records and HttpOnly cookies.
+          Staged local media is stored server-side for the requested content workflow and is
+          not exposed through the public website. Authorization codes, OAuth state values, raw
+          tokens, and administrator passwords are not intentionally exposed in the application
+          UI or written to application access logs. Administrative sessions use server-backed
+          records and HttpOnly cookies.
         </p>
 
         <h2>5. Sharing</h2>
@@ -248,10 +284,12 @@ export function PrivacyPage() {
 
         <h2>6. Retention</h2>
         <p>
-          Connection records are retained while needed to operate the authorized integration
-          and maintain security history. Expired OAuth state records are automatically cleaned.
-          Operational backups and audit records may be retained for limited security and
-          recovery purposes.
+          Connection, synchronization, publishing, webhook, and analytics records are
+          retained while needed to operate the authorized integration and maintain security
+          history. Staged media may be retained while required for a requested draft or
+          publishing workflow and operational recovery. Expired OAuth state records are
+          automatically cleaned. Operational backups and audit records may be retained for
+          limited security and recovery purposes.
         </p>
 
         <h2>7. User controls</h2>

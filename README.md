@@ -317,3 +317,32 @@ The Production Readiness Gate returns individual PASS/WARN/FAIL checks for envir
 OAuth/HTTPS, target scopes, connected accounts, worker processes, backup freshness, migration
 version, webhook backlog, publishing queue state, and legal pages. It reports READY only when
 there are zero FAIL checks.
+
+
+## TikTok App Review Package
+
+Review preparation is exposed through:
+
+- `GET /api/operations/review-package`
+
+The review package keeps code implementation, app scope configuration, account grants, and live
+Sandbox evidence as separate states. A scope is not marked PASS merely because its code exists.
+
+Admin includes a Production Review Package panel with:
+
+- public review URLs;
+- product/scope matrix;
+- route evidence;
+- configured/granted state;
+- review blockers/manual actions;
+- a maximum-five-video demo plan.
+
+Review documents:
+
+- `docs/TIKTOK_PRODUCTION_REVIEW_PACKAGE_2026-09-21.md`
+- `docs/REAL_SCOPE_E2E_MATRIX_2026-09-21.md`
+- `docs/TIKTOK_REVIEW_DEMO_VIDEO_SCRIPT_2026-09-21.md`
+- `docs/BATCH_O_PRODUCTION_REVIEW_PACKAGE_2026-09-21.md`
+
+The current public name still contains the TikTok brand and is intentionally reported as a
+review blocker instead of being silently renamed.

@@ -1888,3 +1888,143 @@ button:disabled {
   .ops-summary-grid,
   .readiness-summary { grid-template-columns: 1fr; }
 }
+
+.review-panel {
+  margin-top: 16px;
+}
+
+.review-head-actions {
+  display: flex;
+  gap: 10px;
+  align-items: center;
+  flex-wrap: wrap;
+}
+
+.review-url-grid {
+  display: grid;
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+  gap: 10px;
+  margin: 18px 0;
+}
+
+.review-url-grid article {
+  display: grid;
+  grid-template-columns: minmax(0, 1fr) auto;
+  gap: 6px 10px;
+  align-items: center;
+  border: 1px solid rgba(148, 163, 184, .12);
+  border-radius: 12px;
+  padding: 12px;
+  background: rgba(8, 15, 27, .5);
+}
+
+.review-url-grid article > span {
+  grid-column: 1 / -1;
+  color: #94a3b8;
+  font-size: 10px;
+  text-transform: uppercase;
+}
+
+.review-url-grid code {
+  overflow-wrap: anywhere;
+  color: #93c5fd;
+}
+
+.review-products {
+  display: grid;
+  gap: 10px;
+  margin: 16px 0;
+}
+
+.review-products > div {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 8px;
+}
+
+.review-products span {
+  border: 1px solid rgba(148, 163, 184, .16);
+  border-radius: 999px;
+  padding: 6px 9px;
+  color: #cbd5e1;
+  font-size: 11px;
+}
+
+.review-section-title {
+  margin: 22px 0 10px;
+}
+
+.review-section-title > div {
+  display: grid;
+  gap: 4px;
+}
+
+.review-section-title span {
+  color: #94a3b8;
+  font-size: 12px;
+}
+
+.review-table-wrap {
+  overflow-x: auto;
+}
+
+.review-table {
+  width: 100%;
+  min-width: 1050px;
+  border-collapse: collapse;
+}
+
+.review-table th,
+.review-table td {
+  padding: 11px 9px;
+  text-align: left;
+  vertical-align: top;
+  border-top: 1px solid rgba(148, 163, 184, .1);
+  font-size: 12px;
+}
+
+.review-table th {
+  color: #94a3b8;
+  font-size: 10px;
+  text-transform: uppercase;
+}
+
+.review-state {
+  display: inline-flex;
+  border: 1px solid rgba(148, 163, 184, .2);
+  border-radius: 999px;
+  padding: 4px 7px;
+  font-size: 9px;
+  font-weight: 800;
+}
+
+.review-routes {
+  display: grid;
+  gap: 4px;
+  margin-top: 6px;
+}
+
+.review-routes code {
+  color: #94a3b8;
+  overflow-wrap: anywhere;
+}
+
+.check-manual {
+  color: #93c5fd;
+  border-color: rgba(59, 130, 246, .35);
+}
+
+.review-demo-list {
+  display: grid;
+  gap: 8px;
+  padding-left: 22px;
+  color: #cbd5e1;
+}
+
+.review-demo-list li {
+  line-height: 1.5;
+}
+
+@media (max-width: 760px) {
+  .review-url-grid { grid-template-columns: 1fr; }
+}

@@ -2,7 +2,7 @@ from datetime import UTC, datetime
 from typing import Annotated
 
 import httpx
-from fastapi import APIRouter, Depends
+from fastapi import APIRouter, Depends, Request
 from sqlalchemy.orm import Session
 
 from app.api.auth import DbSession, require_admin
@@ -16,8 +16,10 @@ from app.schemas.operations import (
     OperationsSummary,
     ProductionReadinessReport,
 )
+from app.schemas.review import ReviewPackageReport
 from app.services.audit import record_audit
 from app.services.operations import build_operations_summary, build_production_readiness
+from app.services.review_package import build_review_package
 from app.services.tiktok.client import TikTokAPIError, TikTokOAuthError
 from app.services.tiktok.profile import TikTokProfileIdentityError, sync_account_profile
 from app.services.tiktok.tokens import (
@@ -63,6 +65,13 @@ def _run_account_action(
         return f"Video synchronization completed: {len(page.videos)} item(s)"
 
     raise ValueError("Unsupported bulk action")
+
+
+@router.get("/review-package", response_model=ReviewPackageReport)
+def review_package(request: Request, _: Admin, db: DbSession):
+    return ReviewPackageReport(
+        **build_review_package(db, get_settings(), request.app)
+    )
 
 
 @router.post("/bulk", response_model=BulkOperationResponse)

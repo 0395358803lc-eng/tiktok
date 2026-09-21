@@ -4,6 +4,7 @@ import AnalyticsPanel from "./AnalyticsPanel";
 import DirectPostPanel from "./DirectPostPanel";
 import SchedulerPanel from "./SchedulerPanel";
 import OperationsPanel from "./OperationsPanel";
+import ReviewPackagePanel from "./ReviewPackagePanel";
 import DraftUploadPanel from "./DraftUploadPanel";
 import VideoLibrary from "./VideoLibrary";
 import WebhookPanel from "./WebhookPanel";
@@ -448,6 +449,8 @@ export default function App() {
           </section>
 
           <OperationsPanel accounts={accounts} onChanged={loadTikTok} />
+
+          <ReviewPackagePanel />
 
           <AnalyticsPanel accounts={accounts} />
 
