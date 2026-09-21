@@ -297,3 +297,23 @@ Runtime configuration:
 - `SCHEDULER_WORKER_INTERVAL_SECONDS=10`
 - `SCHEDULER_READY_BATCH_SIZE=50`
 - `PUBLISH_RETRY_BASE_SECONDS=300`
+
+
+## Operations Control Center
+
+The admin UI includes a multi-account operations dashboard backed by:
+
+- `GET /api/operations/summary`
+- `POST /api/operations/bulk`
+- `GET /api/operations/production-readiness`
+
+Account health summarizes token lifetime, granted/configured scopes, profile freshness, stored
+videos, publishing failures, draft failures, and webhook errors.
+
+Explicit bulk actions support token refresh, profile sync, and latest-video sync. Each account
+is processed independently and results are returned per account.
+
+The Production Readiness Gate returns individual PASS/WARN/FAIL checks for environment,
+OAuth/HTTPS, target scopes, connected accounts, worker processes, backup freshness, migration
+version, webhook backlog, publishing queue state, and legal pages. It reports READY only when
+there are zero FAIL checks.

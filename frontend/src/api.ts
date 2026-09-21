@@ -212,6 +212,67 @@ export type WebhookEvent = {
   processed_at?: string | null;
 };
 
+export type AccountOperationsSummary = {
+  account_id: number;
+  display_name?: string | null;
+  username?: string | null;
+  status: string;
+  scopes: string[];
+  missing_configured_scopes: string[];
+  access_token_expires_at: string;
+  refresh_token_expires_at: string;
+  access_token_minutes_left: number;
+  refresh_token_days_left: number;
+  profile_synced_at?: string | null;
+  profile_age_hours?: number | null;
+  stored_videos: number;
+  scheduled_posts: number;
+  running_posts: number;
+  failed_posts: number;
+  failed_drafts: number;
+  webhook_errors: number;
+  health: "OK" | "WARNING" | "ERROR";
+  issues: string[];
+};
+
+export type OperationsSummary = {
+  generated_at: string;
+  accounts_total: number;
+  connected_accounts: number;
+  reauth_accounts: number;
+  issue_accounts: number;
+  scheduled_posts: number;
+  running_posts: number;
+  failed_posts: number;
+  pending_webhooks: number;
+  error_webhooks: number;
+  accounts: AccountOperationsSummary[];
+};
+
+export type BulkOperationResponse = {
+  action: string;
+  requested: number;
+  succeeded: number;
+  failed: number;
+  results: { account_id: number; ok: boolean; detail: string }[];
+};
+
+export type ReadinessCheck = {
+  key: string;
+  label: string;
+  status: "PASS" | "WARN" | "FAIL";
+  detail: string;
+};
+
+export type ProductionReadinessReport = {
+  generated_at: string;
+  status: "READY" | "NOT_READY";
+  pass_count: number;
+  warn_count: number;
+  fail_count: number;
+  checks: ReadinessCheck[];
+};
+
 export type AuditEvent = {
   id: number;
   event_type: string;
@@ -372,6 +433,17 @@ export const api = {
   auditEvents: (limit = 50) => json<AuditEvent[]>(`/api/audit/events?limit=${limit}`),
   webhookEvents: (limit = 100) =>
     json<WebhookEvent[]>(`/api/tiktok/webhook-events?limit=${limit}`),
+  operationsSummary: () => json<OperationsSummary>("/api/operations/summary"),
+  productionReadiness: () =>
+    json<ProductionReadinessReport>("/api/operations/production-readiness"),
+  bulkOperation: (
+    action: "REFRESH_TOKENS" | "SYNC_PROFILE" | "SYNC_VIDEOS",
+    accountIds: number[],
+  ) =>
+    json<BulkOperationResponse>("/api/operations/bulk", {
+      method: "POST",
+      body: JSON.stringify({ action, account_ids: accountIds }),
+    }),
   startTikTokOAuth: (scopes?: string[]) =>
     json<OAuthStart>("/api/tiktok/oauth/start", {
       method: "POST",

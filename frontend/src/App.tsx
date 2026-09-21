@@ -3,6 +3,7 @@ import { FormEvent, useEffect, useState } from "react";
 import AnalyticsPanel from "./AnalyticsPanel";
 import DirectPostPanel from "./DirectPostPanel";
 import SchedulerPanel from "./SchedulerPanel";
+import OperationsPanel from "./OperationsPanel";
 import DraftUploadPanel from "./DraftUploadPanel";
 import VideoLibrary from "./VideoLibrary";
 import WebhookPanel from "./WebhookPanel";
@@ -445,6 +446,8 @@ export default function App() {
               </div>
             )}
           </section>
+
+          <OperationsPanel accounts={accounts} onChanged={loadTikTok} />
 
           <AnalyticsPanel accounts={accounts} />
 
