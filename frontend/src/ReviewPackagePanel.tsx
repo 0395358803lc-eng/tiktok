@@ -19,7 +19,7 @@ export default function ReviewPackagePanel() {
       setReport(await api.reviewPackage());
       setError("");
     } catch (err) {
-      setError(err instanceof Error ? err.message : "Không thể tải hồ sơ review");
+      setError(err instanceof Error ? err.message : "Không thể tải hồ sơ xét duyệt");
     } finally {
       setBusy(false);
     }
@@ -38,8 +38,8 @@ export default function ReviewPackagePanel() {
     <section className="panel review-panel">
       <div className="section-head">
         <div>
-          <span className="eyebrow">TIKTOK APP REVIEW</span>
-          <h3>Hồ sơ chuẩn bị review</h3>
+          <span className="eyebrow">XÉT DUYỆT ỨNG DỤNG TIKTOK</span>
+          <h3>Hồ sơ chuẩn bị xét duyệt</h3>
         </div>
         <div className="review-head-actions">
           <span
@@ -67,12 +67,12 @@ export default function ReviewPackagePanel() {
             <ReviewUrl label="Trang web" value={report.website_url} onCopy={copy} />
             <ReviewUrl label="Điều khoản" value={report.terms_url} onCopy={copy} />
             <ReviewUrl label="Quyền riêng tư" value={report.privacy_url} onCopy={copy} />
-            <ReviewUrl label="OAuth redirect" value={report.oauth_redirect_url} onCopy={copy} />
+            <ReviewUrl label="URL chuyển hướng OAuth" value={report.oauth_redirect_url} onCopy={copy} />
             <ReviewUrl label="Webhook" value={report.webhook_url} onCopy={copy} />
           </div>
 
           <div className="review-products">
-            <strong>Các sản phẩm/API có trong hồ sơ</strong>
+            <strong>Các sản phẩm/API có trong hồ sơ xét duyệt</strong>
             <div>
               {report.products.map((product) => (
                 <span key={product}>{product}</span>
@@ -143,7 +143,7 @@ export default function ReviewPackagePanel() {
 
           <div className="review-section-title">
             <div>
-              <strong>Kiểm tra hồ sơ review</strong>
+              <strong>Kiểm tra hồ sơ xét duyệt</strong>
               <span>Mục ĐẠT được kiểm chứng tự động; mục THỦ CÔNG phải xác nhận trong Developer Portal.</span>
             </div>
           </div>
@@ -164,8 +164,8 @@ export default function ReviewPackagePanel() {
 
           <div className="review-section-title">
             <div>
-              <strong>Kế hoạch video demo</strong>
-              <span>Tối đa 5 video review; chỉ trình bày các scope thực sự xin duyệt.</span>
+              <strong>Kế hoạch video minh họa</strong>
+              <span>Tối đa 5 video xét duyệt; chỉ trình bày các quyền thực sự xin duyệt.</span>
             </div>
           </div>
 

@@ -138,7 +138,7 @@ function NoAccount({ onConnect, busy }: { onConnect: () => void; busy: boolean }
     <section className="panel no-account-workspace">
       <div className="empty-state">
         <strong>Chưa có tài khoản TikTok nào được kết nối.</strong>
-        <span>Kết nối tài khoản đầu tiên để sử dụng hồ sơ, video, analytics và Content Posting API.</span>
+        <span>Kết nối tài khoản đầu tiên để sử dụng hồ sơ, video, phân tích dữ liệu và Content Posting API.</span>
         <button onClick={onConnect} disabled={busy}>
           {busy ? "Đang xử lý…" : "+ Kết nối tài khoản"}
         </button>

@@ -32,7 +32,7 @@ export default function SystemWorkspace({ mode, accounts, auditEvents, onReload,
       <div className="workspace-page-title">
         <span className="eyebrow">QUẢN TRỊ HỆ THỐNG</span>
         <h2>Hệ thống & vận hành</h2>
-        <p>Quản lý sức khỏe account, scope, worker, backup, production gate và hồ sơ review.</p>
+        <p>Quản lý trạng thái tài khoản, quyền API, tiến trình nền, bản sao lưu, trạng thái sẵn sàng production và hồ sơ xét duyệt.</p>
       </div>
       <OperationsPanel accounts={accounts} onChanged={onReload} />
       <ReviewPackagePanel />

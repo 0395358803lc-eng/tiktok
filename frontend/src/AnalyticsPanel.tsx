@@ -111,7 +111,7 @@ export default function AnalyticsPanel({ accounts }: Props) {
       )}
 
       <div className="analytics-summary">
-        <DeltaCard label="Follower" value={report?.account_deltas.followers} />
+        <DeltaCard label="Người theo dõi" value={report?.account_deltas.followers} />
         <DeltaCard label="Đang theo dõi" value={report?.account_deltas.following} />
         <DeltaCard label="Tổng lượt thích" value={report?.account_deltas.likes} />
         <DeltaCard label="Số video" value={report?.account_deltas.videos} />
@@ -121,7 +121,7 @@ export default function AnalyticsPanel({ accounts }: Props) {
         <article className="analytics-chart-card">
           <div className="analytics-card-head">
             <div>
-              <strong>Lịch sử follower</strong>
+              <strong>Lịch sử người theo dõi</strong>
               <span>{report?.account_snapshot_count ?? 0} snapshot thật</span>
             </div>
           </div>
@@ -209,7 +209,7 @@ function MiniLineChart({ points }: { points: { value: number; label: string }[] 
 
   return (
     <div className="mini-chart">
-      <svg viewBox="0 0 100 100" preserveAspectRatio="none" aria-label="Biểu đồ tăng trưởng follower">
+      <svg viewBox="0 0 100 100" preserveAspectRatio="none" aria-label="Biểu đồ tăng trưởng người theo dõi">
         <polyline points={coords} fill="none" vectorEffect="non-scaling-stroke" />
       </svg>
       <div className="mini-chart-legend">

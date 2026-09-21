@@ -149,7 +149,7 @@ export default function DirectPostPanel({ accounts, initialMode = "VIDEO" }: Pro
       setConsentAccepted(false);
     } catch (err) {
       setCreator(null);
-      setError(err instanceof Error ? err.message : "Không thể tải Creator Info");
+      setError(err instanceof Error ? err.message : "Không thể tải thông tin nhà sáng tạo");
     } finally {
       setCreatorBusy(false);
     }
@@ -202,7 +202,7 @@ export default function DirectPostPanel({ accounts, initialMode = "VIDEO" }: Pro
       setSelectedAsset(asset.id);
       form.reset();
       setNotice(
-        "Video stored with duration metadata. Review the preview and settings before posting.",
+        "Video đã được lưu kèm dữ liệu thời lượng. Hãy kiểm tra phần xem trước và thiết lập trước khi đăng.",
       );
     } catch (err) {
       setError(err instanceof Error ? err.message : "Tải video lên thất bại");
@@ -212,9 +212,9 @@ export default function DirectPostPanel({ accounts, initialMode = "VIDEO" }: Pro
   }
 
   function validateCommon(): string | null {
-    if (!creator) return "Hãy tải Creator Info trước khi đăng.";
+    if (!creator) return "Hãy tải thông tin nhà sáng tạo trước khi đăng.";
     if (!privacy) return "Hãy chọn quyền xem bài đăng.";
-    if (!consentAccepted) return "Accept the required TikTok posting declaration.";
+    if (!consentAccepted) return "Hãy xác nhận điều khoản đăng bài bắt buộc của TikTok.";
     if (commercial && !yourBrand && !brandedContent) {
       return "Hãy chọn Thương hiệu của tôi, Nội dung hợp tác trả phí hoặc cả hai.";
     }
@@ -250,7 +250,7 @@ export default function DirectPostPanel({ accounts, initialMode = "VIDEO" }: Pro
       creator?.max_video_post_duration_sec &&
       selectedMedia.duration_seconds > creator.max_video_post_duration_sec
     ) {
-      setError("Selected video exceeds the creator's current maximum duration.");
+      setError("Video đã chọn vượt quá thời lượng tối đa hiện tại của tài khoản.");
       return;
     }
 
@@ -291,11 +291,11 @@ export default function DirectPostPanel({ accounts, initialMode = "VIDEO" }: Pro
       });
       await loadJobs(selected.id);
       setNotice(
-        "Direct Post job #" +
+        "Tác vụ đăng trực tiếp #" +
           job.id +
           (scheduleEnabled
-          ? " scheduled. SchedulerWorker will release it at the selected time."
-          : " queued. PublishWorker will re-check Creator Info before sending."),
+          ? " đã được lên lịch. Hệ thống sẽ đưa bài vào hàng đợi khi đến giờ."
+          : " đã vào hàng đợi. Hệ thống sẽ kiểm tra lại thông tin nhà sáng tạo trước khi gửi."),
       );
     } catch (err) {
       setError(err instanceof Error ? err.message : "Không thể đưa bài đăng trực tiếp vào hàng đợi");
@@ -341,11 +341,11 @@ export default function DirectPostPanel({ accounts, initialMode = "VIDEO" }: Pro
       });
       await loadJobs(selected.id);
       setNotice(
-        "Photo Direct Post job #" +
+        "Tác vụ đăng ảnh trực tiếp #" +
           job.id +
           (scheduleEnabled
-          ? " scheduled. SchedulerWorker will release it at the selected time."
-          : " queued. TikTok will pull the images from the verified URLs."),
+          ? " đã được lên lịch. Hệ thống sẽ đưa bài vào hàng đợi khi đến giờ."
+          : " đã vào hàng đợi. TikTok sẽ lấy ảnh từ các URL đã được xác minh."),
       );
     } catch (err) {
       setError(err instanceof Error ? err.message : "Không thể đưa bài đăng ảnh vào hàng đợi");
@@ -512,7 +512,7 @@ export default function DirectPostPanel({ accounts, initialMode = "VIDEO" }: Pro
                     </div>
                   )}
                   <label>
-                    Caption
+                    Chú thích
                     <textarea
                       rows={4}
                       maxLength={2200}
@@ -761,7 +761,7 @@ export default function DirectPostPanel({ accounts, initialMode = "VIDEO" }: Pro
               disabled={busy || selectedId === null}
               onClick={() => selectedId !== null && loadJobs(selectedId)}
             >
-              Refresh list
+              Làm mới danh sách
             </button>
           </div>
 

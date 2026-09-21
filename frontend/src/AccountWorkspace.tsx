@@ -63,9 +63,9 @@ const groups: {
     ],
   },
   {
-    label: "Upload & đăng bài",
+    label: "Tải lên & đăng bài",
     items: [
-      { id: "upload-video", icon: "⬆️", label: "Upload video", scope: "video.upload" },
+      { id: "upload-video", icon: "⬆️", label: "Tải video lên", scope: "video.upload" },
       { id: "direct-video", icon: "🚀", label: "Đăng video trực tiếp", scope: "video.publish" },
       { id: "photo-post", icon: "🖼️", label: "Đăng ảnh", scope: "video.publish" },
     ],
@@ -331,7 +331,7 @@ function ExtendedProfile({ account }: { account: TikTokAccount }) {
     return (
       <PermissionRequired
         scope="user.info.profile"
-        text="Tài khoản chưa cấp quyền đọc username, bio, profile link và trạng thái verified."
+        text="Tài khoản chưa cấp quyền đọc tên người dùng, tiểu sử, liên kết hồ sơ và trạng thái xác minh."
       />
     );
   }
@@ -465,7 +465,7 @@ function PostingStatusIntro() {
   return (
     <section className="account-feature-card feature-context-card">
       <div>
-        <span className="eyebrow">GET POST STATUS + WEBHOOK</span>
+        <span className="eyebrow">TRẠNG THÁI ĐĂNG + WEBHOOK</span>
         <h3>Trạng thái đăng</h3>
         <p>
           Theo dõi processing, publish thành công/thất bại, publish_id, public post ID

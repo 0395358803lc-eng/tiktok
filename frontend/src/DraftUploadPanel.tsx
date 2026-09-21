@@ -56,7 +56,7 @@ export default function DraftUploadPanel({ accounts }: Props) {
         if (firstVideo) setSelectedAsset(firstVideo.id);
       }
     } catch (err) {
-      setError(err instanceof Error ? err.message : "Không thể tải thư viện media");
+      setError(err instanceof Error ? err.message : "Không thể tải thư viện tệp");
     }
   }
 
@@ -87,7 +87,7 @@ export default function DraftUploadPanel({ accounts }: Props) {
       await loadAssets();
       setSelectedAsset(asset.id);
       form.reset();
-      setNotice("Video đã được lưu vào thư viện media và chưa được gửi sang TikTok.");
+      setNotice("Video đã được lưu vào thư viện tệp và chưa được gửi sang TikTok.");
     } catch (err) {
       setError(err instanceof Error ? err.message : "Tải video lên thất bại");
     } finally {
@@ -194,7 +194,7 @@ export default function DraftUploadPanel({ accounts }: Props) {
         <div className="setup-box">
           <strong>Cần quyền video.upload</strong>
           <p>
-            Bật Content Posting API và quyền <code>video.upload</code> trong TikTok Developer Portal, sau đó kết nối lại tài khoản để cấp quyền mới. Media vẫn có thể được lưu cục bộ trước khi quyền được cấp.
+            Bật Content Posting API và quyền <code>video.upload</code> trong TikTok Developer Portal, sau đó kết nối lại tài khoản để cấp quyền mới. Tệp vẫn có thể được lưu cục bộ trước khi quyền được cấp.
           </p>
         </div>
       ) : null}
@@ -205,7 +205,7 @@ export default function DraftUploadPanel({ accounts }: Props) {
       <div className="draft-studio-grid">
         <article className="draft-card">
           <span className="eyebrow">BẢN NHÁP VIDEO</span>
-          <h4>Thư viện media cục bộ</h4>
+          <h4>Thư viện tệp cục bộ</h4>
           <form className="draft-form" onSubmit={uploadVideo}>
             <label>
               MP4, MOV, or WebM
