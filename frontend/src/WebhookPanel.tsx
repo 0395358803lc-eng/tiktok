@@ -1,6 +1,7 @@
 import { useEffect, useMemo, useState } from "react";
 
 import { api, WebhookEvent } from "./api";
+import { webhookStatusVi } from "./vi";
 
 export default function WebhookPanel() {
   const [events, setEvents] = useState<WebhookEvent[]>([]);
@@ -34,9 +35,9 @@ export default function WebhookPanel() {
   async function copyCallback() {
     try {
       await navigator.clipboard.writeText(callbackUrl);
-      setNotice("Webhook callback copied.");
+      setNotice("Đã sao chép URL callback Webhook.");
     } catch {
-      setNotice("Sao chép thất bại. Select the callback URL manually.");
+      setNotice("Sao chép thất bại. Hãy chọn URL callback và sao chép thủ công.");
     }
   }
 
@@ -57,7 +58,7 @@ export default function WebhookPanel() {
           <strong>URL callback</strong>
           <code>{callbackUrl}</code>
           <span>
-            Add this HTTPS URL in TikTok Developer Portal → Development configuration → Webhooks.
+            Thêm URL HTTPS này vào TikTok Developer Portal → Development configuration → Webhooks.
           </span>
         </div>
         <button className="ghost" onClick={copyCallback}>Sao chép URL</button>
@@ -98,7 +99,7 @@ export default function WebhookPanel() {
             <article className="webhook-event-row" key={event.id}>
               <div>
                 <strong>{event.event_type}</strong>
-                <span>{event.user_open_id || "No user open_id"}</span>
+                <span>{event.user_open_id || "Không có user_open_id"}</span>
                 <span>
                   Received {new Date(event.received_at).toLocaleString("vi-VN")}
                 </span>
@@ -108,7 +109,7 @@ export default function WebhookPanel() {
               </div>
               <div className="webhook-event-meta">
                 <span className={"webhook-status status-" + event.status.toLowerCase()}>
-                  {event.status}
+                  {webhookStatusVi(event.status)}
                 </span>
                 <span>{event.attempts} attempt{event.attempts === 1 ? "" : "s"}</span>
                 {event.processed_at && (

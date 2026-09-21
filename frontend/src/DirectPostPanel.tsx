@@ -8,7 +8,7 @@ import {
   TikTokAccount,
 } from "./api";
 import { readVideoDuration } from "./media";
-import { jobStatusVi } from "./vi";
+import { jobStatusVi, mediaTypeVi } from "./vi";
 
 type Props = {
   accounts: TikTokAccount[];
@@ -777,7 +777,7 @@ export default function DirectPostPanel({ accounts, initialMode = "VIDEO" }: Pro
                   <div>
                     <strong>#{job.id} · {job.media_type} · {privacyLabel(job.privacy_level)}</strong>
                     <span>{new Date(job.created_at).toLocaleString("vi-VN")}</span>
-                    <span>Hàng đợi: {job.schedule_status}</span>
+                    <span>Hàng đợi: {jobStatusVi(job.schedule_status)}</span>
                     {job.scheduled_at && (
                       <span>Đã lên lịch: {new Date(job.scheduled_at).toLocaleString("vi-VN")}</span>
                     )}

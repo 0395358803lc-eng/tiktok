@@ -7,6 +7,7 @@ import {
   ProductionReadinessReport,
   TikTokAccount,
 } from "./api";
+import { accountStatusVi, bulkActionVi, checkStatusVi, healthStatusVi, readinessStatusVi } from "./vi";
 
 type Props = {
   accounts: TikTokAccount[];
@@ -138,7 +139,7 @@ export default function OperationsPanel({ accounts, onChanged }: Props) {
         {bulkResult && (
           <div className="bulk-result">
             <strong>
-              {bulkResult.action}: {bulkResult.succeeded} thành công / {bulkResult.failed} thất bại
+              {bulkActionVi(bulkResult.action)}: {bulkResult.succeeded} thành công / {bulkResult.failed} thất bại
             </strong>
             <div>
               {bulkResult.results.map((item) => (
@@ -167,8 +168,8 @@ export default function OperationsPanel({ accounts, onChanged }: Props) {
                   <th>Tài khoản</th>
                   <th>Sức khỏe</th>
                   <th>Quyền</th>
-                  <th>Access token</th>
-                  <th>Refresh token</th>
+                  <th>Token truy cập</th>
+                  <th>Token làm mới</th>
                   <th>Đồng bộ hồ sơ</th>
                   <th>Video</th>
                   <th>Đăng bài</th>
@@ -194,11 +195,11 @@ export default function OperationsPanel({ accounts, onChanged }: Props) {
                             account?.display_name ||
                             "Tài khoản #" + row.account_id}
                         </strong>
-                        <span>#{row.account_id} · {row.status}</span>
+                        <span>#{row.account_id} · {accountStatusVi(row.status)}</span>
                       </td>
                       <td>
                         <span className={"ops-health health-" + row.health.toLowerCase()}>
-                          {row.health}
+                          {healthStatusVi(row.health)}
                         </span>
                       </td>
                       <td>
@@ -270,7 +271,7 @@ export default function OperationsPanel({ accounts, onChanged }: Props) {
               (readiness?.status === "READY" ? "ready" : "blocked")
             }
           >
-            {readiness?.status ?? "ĐANG KIỂM TRA"}
+            {readinessStatusVi(readiness?.status ?? "CHECKING")}
           </span>
         </div>
 
@@ -284,7 +285,7 @@ export default function OperationsPanel({ accounts, onChanged }: Props) {
           {(readiness?.checks ?? []).map((check) => (
             <article className="readiness-row" key={check.key}>
               <span className={"readiness-check check-" + check.status.toLowerCase()}>
-                {check.status}
+                {checkStatusVi(check.status)}
               </span>
               <div>
                 <strong>{check.label}</strong>

@@ -2,7 +2,7 @@ import { FormEvent, useEffect, useMemo, useState } from "react";
 
 import { api, DraftJob, MediaAsset, TikTokAccount } from "./api";
 import { readVideoDuration } from "./media";
-import { jobStatusVi } from "./vi";
+import { jobStatusVi, mediaTypeVi } from "./vi";
 
 type Props = {
   accounts: TikTokAccount[];
@@ -309,7 +309,7 @@ export default function DraftUploadPanel({ accounts }: Props) {
           {jobs.map((job) => (
             <article className="draft-job" key={job.id}>
               <div>
-                <strong>#{job.id} · {job.media_type}</strong>
+                <strong>#{job.id} · {mediaTypeVi(job.media_type)}</strong>
                 <span>{new Date(job.created_at).toLocaleString("vi-VN")}</span>
                 {job.publish_id && <span>Publish ID: {job.publish_id}</span>}
                 {job.fail_reason && <span className="draft-failure">{job.fail_reason}</span>}

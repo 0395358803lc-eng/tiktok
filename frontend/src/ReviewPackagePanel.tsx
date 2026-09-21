@@ -1,6 +1,7 @@
 import { useEffect, useState } from "react";
 
 import { api, ReviewPackageReport } from "./api";
+import { checkStatusVi, reviewStatusVi } from "./vi";
 
 export default function ReviewPackagePanel() {
   const [report, setReport] = useState<ReviewPackageReport | null>(null);
@@ -49,7 +50,7 @@ export default function ReviewPackagePanel() {
                 : "readiness-blocked")
             }
           >
-            {report?.status ?? "ĐANG KIỂM TRA"}
+            {reviewStatusVi(report?.status ?? "CHECKING")}
           </span>
           <button className="ghost" disabled={busy} onClick={load}>
             {busy ? "Đang kiểm tra…" : "Kiểm tra lại"}
@@ -63,7 +64,7 @@ export default function ReviewPackagePanel() {
       {report && (
         <>
           <div className="review-url-grid">
-            <ReviewUrl label="Website" value={report.website_url} onCopy={copy} />
+            <ReviewUrl label="Trang web" value={report.website_url} onCopy={copy} />
             <ReviewUrl label="Điều khoản" value={report.terms_url} onCopy={copy} />
             <ReviewUrl label="Quyền riêng tư" value={report.privacy_url} onCopy={copy} />
             <ReviewUrl label="OAuth redirect" value={report.oauth_redirect_url} onCopy={copy} />
@@ -107,7 +108,7 @@ export default function ReviewPackagePanel() {
                     <td>{item.feature}</td>
                     <td>
                       <span className={"review-state " + (item.code_implemented ? "check-pass" : "check-fail")}>
-                        {item.code_implemented ? "PASS" : "FAIL"}
+                        {checkStatusVi(item.code_implemented ? "PASS" : "FAIL")}
                       </span>
                     </td>
                     <td>{item.configured ? "Có" : "Không"}</td>
@@ -123,10 +124,10 @@ export default function ReviewPackagePanel() {
                               : "check-warn")
                         }
                       >
-                        {item.status}
+                        {checkStatusVi(item.status)}
                       </span>
                       <details>
-                        <summary>{item.evidence_routes.length} route(s)</summary>
+                        <summary>{item.evidence_routes.length} endpoint</summary>
                         <div className="review-routes">
                           {item.evidence_routes.map((route) => (
                             <code key={route}>{route}</code>
@@ -151,7 +152,7 @@ export default function ReviewPackagePanel() {
             {report.checks.map((check) => (
               <article className="readiness-row" key={check.key}>
                 <span className={"readiness-check check-" + check.status.toLowerCase()}>
-                  {check.status}
+                  {checkStatusVi(check.status)}
                 </span>
                 <div>
                   <strong>{check.label}</strong>

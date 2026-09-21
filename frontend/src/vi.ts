@@ -48,3 +48,72 @@ export function scopeLabelVi(scope: string) {
   };
   return map[scope] ?? scope;
 }
+
+
+export function healthStatusVi(status: string) {
+  const map: Record<string, string> = {
+    OK: "Tốt",
+    WARNING: "Cảnh báo",
+    ERROR: "Lỗi",
+  };
+  return map[status] ?? status;
+}
+
+export function readinessStatusVi(status: string) {
+  const map: Record<string, string> = {
+    READY: "Sẵn sàng",
+    NOT_READY: "Chưa sẵn sàng",
+    CHECKING: "Đang kiểm tra",
+  };
+  return map[status] ?? status;
+}
+
+export function checkStatusVi(status: string) {
+  const map: Record<string, string> = {
+    PASS: "Đạt",
+    WARN: "Cảnh báo",
+    FAIL: "Lỗi",
+    MANUAL: "Thủ công",
+    BLOCKED: "Bị chặn",
+    NOT_CONFIGURED: "Chưa cấu hình",
+  };
+  return map[status] ?? status;
+}
+
+export function reviewStatusVi(status: string) {
+  const map: Record<string, string> = {
+    READY_FOR_REVIEW: "Sẵn sàng gửi review",
+    NOT_READY_FOR_REVIEW: "Chưa sẵn sàng gửi review",
+    CHECKING: "Đang kiểm tra",
+  };
+  return map[status] ?? status;
+}
+
+export function mediaTypeVi(value: string) {
+  const map: Record<string, string> = {
+    VIDEO: "Video",
+    PHOTO: "Ảnh",
+  };
+  return map[value] ?? value;
+}
+
+export function webhookStatusVi(value: string) {
+  const map: Record<string, string> = {
+    PENDING: "Đang chờ",
+    PROCESSING: "Đang xử lý",
+    PROCESSED: "Đã xử lý",
+    SUCCESS: "Thành công",
+    ERROR: "Lỗi",
+    DUPLICATE: "Trùng lặp",
+  };
+  return map[value] ?? value;
+}
+
+export function bulkActionVi(value: string) {
+  const map: Record<string, string> = {
+    REFRESH_TOKENS: "Làm mới token",
+    SYNC_PROFILE: "Đồng bộ hồ sơ",
+    SYNC_VIDEOS: "Đồng bộ video",
+  };
+  return map[value] ?? value;
+}

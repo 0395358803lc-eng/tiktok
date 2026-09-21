@@ -113,23 +113,23 @@ def build_operations_summary(db: Session, settings: Settings) -> dict:
 
         issues: list[str] = []
         if account.status != "CONNECTED":
-            issues.append(f"Account status is {account.status}")
+            issues.append(f"Trạng thái tài khoản: {account.status}")
         if missing:
-            issues.append("Missing configured scopes: " + ", ".join(missing))
+            issues.append("Thiếu scope đã cấu hình: " + ", ".join(missing))
         if access_minutes <= 30:
-            issues.append("Access token expires within 30 minutes")
+            issues.append("Access token sẽ hết hạn trong vòng 30 phút")
         if refresh_days <= 7:
-            issues.append("Refresh token expires within 7 days")
+            issues.append("Refresh token sẽ hết hạn trong vòng 7 ngày")
         if account.profile_synced_at is None:
-            issues.append("Profile has never been synchronized")
+            issues.append("Hồ sơ chưa từng được đồng bộ")
         elif profile_age is not None and profile_age > 24:
-            issues.append("Profile sync is older than 24 hours")
+            issues.append("Dữ liệu hồ sơ đã cũ hơn 24 giờ")
         if failed_posts:
-            issues.append(f"{failed_posts} failed publish job(s)")
+            issues.append(f"{failed_posts} tác vụ đăng bài thất bại")
         if failed_drafts:
-            issues.append(f"{failed_drafts} failed draft job(s)")
+            issues.append(f"{failed_drafts} tác vụ bản nháp thất bại")
         if webhook_errors:
-            issues.append(f"{webhook_errors} webhook error(s)")
+            issues.append(f"{webhook_errors} lỗi Webhook")
 
         severe = (
             account.status in {"ERROR", "REVOKED", "REAUTH_REQUIRED"}
@@ -202,23 +202,23 @@ def build_production_readiness(db: Session, settings: Settings) -> dict:
 
     add(
         "app_env",
-        "Application environment",
+        "Môi trường ứng dụng",
         "PASS" if settings.app_env.lower() == "production" else "FAIL",
         f"APP_ENV={settings.app_env}",
     )
     add(
         "tiktok_env",
-        "TikTok environment",
+        "Môi trường TikTok",
         "PASS" if settings.tiktok_environment.lower() == "production" else "FAIL",
         f"TIKTOK_ENVIRONMENT={settings.tiktok_environment}",
     )
     add(
         "oauth",
-        "TikTok OAuth configuration",
+        "Cấu hình OAuth TikTok",
         "PASS" if oauth_configured(settings) else "FAIL",
-        "OAuth client, secret and redirect URI are configured"
+        "OAuth client, secret và redirect URI đã được cấu hình"
         if oauth_configured(settings)
-        else "OAuth configuration is incomplete",
+        else "Cấu hình OAuth chưa đầy đủ",
     )
 
     redirect = settings.tiktok_redirect_uri or ""
@@ -226,25 +226,25 @@ def build_production_readiness(db: Session, settings: Settings) -> dict:
         "redirect_https",
         "HTTPS OAuth redirect",
         "PASS" if redirect.startswith("https://") else "FAIL",
-        redirect or "No redirect URI configured",
+        redirect or "Chưa cấu hình redirect URI",
     )
     origin = settings.frontend_origin or ""
     add(
         "frontend_https",
         "HTTPS frontend origin",
         "PASS" if origin.startswith("https://") else "FAIL",
-        origin or "No frontend origin configured",
+        origin or "Chưa cấu hình frontend origin",
     )
 
     configured = set(configured_personal_scopes(settings))
     missing_scopes = [scope for scope in PERSONAL_SCOPES if scope not in configured]
     add(
         "all_personal_scopes",
-        "Personal-account API scopes",
+        "Scope API tài khoản cá nhân",
         "PASS" if not missing_scopes else "FAIL",
-        "All supported personal scopes are configured"
+        "Đã cấu hình đầy đủ các scope tài khoản cá nhân được hỗ trợ"
         if not missing_scopes
-        else "Missing: " + ", ".join(missing_scopes),
+        else "Thiếu: " + ", ".join(missing_scopes),
     )
 
     account_count = db.scalar(
@@ -254,9 +254,9 @@ def build_production_readiness(db: Session, settings: Settings) -> dict:
     ) or 0
     add(
         "connected_account",
-        "Connected TikTok account",
+        "Tài khoản TikTok đã kết nối",
         "PASS" if account_count > 0 else "FAIL",
-        f"{account_count} connected account(s)",
+        f"{account_count} tài khoản đã kết nối",
     )
 
     account_issues = 0
@@ -266,9 +266,9 @@ def build_production_readiness(db: Session, settings: Settings) -> dict:
             account_issues += 1
     add(
         "account_scope_health",
-        "Connected account scope health",
+        "Tình trạng scope của tài khoản đã kết nối",
         "PASS" if account_issues == 0 and account_count > 0 else "WARN",
-        f"{account_issues} account(s) require attention",
+        f"{account_issues} tài khoản cần chú ý",
     )
 
     dead_workers = [
@@ -276,31 +276,31 @@ def build_production_readiness(db: Session, settings: Settings) -> dict:
     ]
     add(
         "workers",
-        "Background workers",
+        "Worker nền",
         "PASS" if not dead_workers else "FAIL",
-        "All required workers are running"
+        "Tất cả worker cần thiết đang chạy"
         if not dead_workers
-        else "Down: " + ", ".join(dead_workers),
+        else "Đang dừng: " + ", ".join(dead_workers),
     )
 
     backup, backup_age = _latest_backup()
     add(
         "backup",
-        "Recent PostgreSQL backup",
+        "Backup PostgreSQL gần nhất",
         "PASS" if backup is not None and backup_age is not None and backup_age <= 24 else "FAIL",
         (
-            f"{backup.name}, age {backup_age:.1f}h"
+            f"{backup.name}, cách đây {backup_age:.1f} giờ"
             if backup is not None and backup_age is not None
-            else "No backup found"
+            else "Chưa tìm thấy backup"
         ),
     )
 
     migration = db.execute(text("SELECT version_num FROM alembic_version")).scalar_one_or_none()
     add(
         "migration",
-        "Database migration",
+        "Migration cơ sở dữ liệu",
         "PASS" if migration == EXPECTED_MIGRATION else "FAIL",
-        f"Current={migration or 'unknown'}, expected={EXPECTED_MIGRATION}",
+        f"Hiện tại={migration or 'không rõ'}, yêu cầu={EXPECTED_MIGRATION}",
     )
 
     error_webhooks = db.scalar(
@@ -316,9 +316,9 @@ def build_production_readiness(db: Session, settings: Settings) -> dict:
     ) or 0
     add(
         "webhooks",
-        "Webhook processing backlog",
+        "Hàng đợi xử lý Webhook",
         "PASS" if error_webhooks == 0 else "FAIL",
-        f"errors={error_webhooks}, pending={pending_webhooks}",
+        f"lỗi={error_webhooks}, đang chờ={pending_webhooks}",
     )
 
     stuck_cutoff = now.timestamp() - 3600
@@ -330,9 +330,9 @@ def build_production_readiness(db: Session, settings: Settings) -> dict:
             stuck_running += 1
     add(
         "publish_queue",
-        "Publishing queue",
+        "Hàng đợi đăng bài",
         "PASS" if stuck_running == 0 else "FAIL",
-        f"{stuck_running} running job(s) older than 1 hour",
+        f"{stuck_running} tác vụ chạy quá 1 giờ",
     )
 
     public_site = ROOT_DIR / "frontend" / "src" / "PublicSite.tsx"
@@ -341,9 +341,9 @@ def build_production_readiness(db: Session, settings: Settings) -> dict:
     privacy_exists = "export function PrivacyPage" in legal_text
     add(
         "legal_pages",
-        "Terms and Privacy pages",
+        "Trang Điều khoản và Quyền riêng tư",
         "PASS" if terms_exists and privacy_exists else "FAIL",
-        f"terms={terms_exists}, privacy={privacy_exists}",
+        f"điều khoản={terms_exists}, quyền riêng tư={privacy_exists}",
     )
 
     fail_count = sum(1 for item in checks if item["status"] == "FAIL")

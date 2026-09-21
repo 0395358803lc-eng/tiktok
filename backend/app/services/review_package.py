@@ -13,7 +13,7 @@ SCOPE_MATRIX = (
     {
         "scope": "user.info.basic",
         "product": "Login Kit / User Info",
-        "feature": "OAuth connection and basic profile identity",
+        "feature": "Kết nối OAuth và nhận dạng hồ sơ cơ bản",
         "routes": [
             "/api/tiktok/oauth/start",
             "/api/tiktok/oauth/callback",
@@ -24,13 +24,13 @@ SCOPE_MATRIX = (
     {
         "scope": "user.info.profile",
         "product": "User Info",
-        "feature": "Extended profile information",
+        "feature": "Thông tin hồ sơ mở rộng",
         "routes": ["/api/tiktok/accounts/{account_id}/sync-profile"],
     },
     {
         "scope": "user.info.stats",
         "product": "User Info",
-        "feature": "Follower/following/likes/video statistics and historical analytics",
+        "feature": "Thống kê follower/following/likes/video và phân tích lịch sử",
         "routes": [
             "/api/tiktok/accounts/{account_id}/sync-profile",
             "/api/tiktok/accounts/{account_id}/analytics",
@@ -39,7 +39,7 @@ SCOPE_MATRIX = (
     {
         "scope": "video.list",
         "product": "Display API",
-        "feature": "Authorized account public video library and metrics",
+        "feature": "Thư viện video công khai và chỉ số của tài khoản được cấp quyền",
         "routes": [
             "/api/tiktok/accounts/{account_id}/videos",
             "/api/tiktok/accounts/{account_id}/videos/sync",
@@ -49,7 +49,7 @@ SCOPE_MATRIX = (
     {
         "scope": "video.upload",
         "product": "Content Posting API",
-        "feature": "Upload video/photo content to TikTok Inbox as a draft",
+        "feature": "Tải video/ảnh vào Hộp thư TikTok dưới dạng bản nháp",
         "routes": [
             "/api/tiktok/accounts/{account_id}/drafts/video",
             "/api/tiktok/accounts/{account_id}/drafts/photo",
@@ -59,7 +59,7 @@ SCOPE_MATRIX = (
     {
         "scope": "video.publish",
         "product": "Content Posting API",
-        "feature": "Direct Post with creator-info validation, scheduling and status tracking",
+        "feature": "Đăng trực tiếp với kiểm tra Creator Info, lên lịch và theo dõi trạng thái",
         "routes": [
             "/api/tiktok/accounts/{account_id}/creator-info",
             "/api/tiktok/accounts/{account_id}/publish/video",
@@ -143,91 +143,88 @@ def build_review_package(
 
     add(
         "website",
-        "Externally facing HTTPS website",
+        "Website HTTPS công khai",
         "PASS" if website_is_https and public_text else "FAIL",
-        origin or "No frontend origin configured",
+        origin or "Chưa cấu hình frontend origin",
     )
     add(
         "legal",
-        "Terms and Privacy visible in website source",
+        "Điều khoản và Quyền riêng tư hiển thị trên website",
         "PASS" if terms_exists and privacy_exists else "FAIL",
-        f"terms={terms_exists}, privacy={privacy_exists}",
+        f"điều khoản={terms_exists}, quyền riêng tư={privacy_exists}",
     )
     add(
         "app_name",
-        "Review-safe public app name",
+        "Tên ứng dụng phù hợp để review",
         "FAIL" if brand_contains_tiktok else "PASS",
         (
-            "Current public brand includes 'TikTok'; TikTok App Review Guidelines say "
-            "the app name should not reference social media companies."
+            "Tên public hiện chứa từ 'TikTok'; hướng dẫn App Review của TikTok nêu rằng tên ứng dụng không nên tham chiếu tên công ty mạng xã hội."
             if brand_contains_tiktok
-            else "Public app name does not contain the TikTok brand reference."
+            else "Tên public không chứa tham chiếu thương hiệu TikTok."
         ),
     )
     add(
         "public_use_case",
-        "Non-private product use case",
+        "Use case không phải công cụ riêng tư/cá nhân",
         "MANUAL",
         (
-            "Confirm the review description presents a genuine user-facing service. "
-            "TikTok states apps for private or personal use are not approved."
+            "Xác nhận mô tả review thể hiện đây là dịch vụ thực sự dành cho người dùng. TikTok nêu rằng ứng dụng chỉ dùng riêng tư/cá nhân không được duyệt."
         ),
     )
     add(
         "url_verification_file",
-        "URL verification artifact",
+        "File xác minh URL",
         "PASS" if verification_files else "FAIL",
         (
             verification_files[0].name
             if verification_files
-            else "No TikTok URL-verification file found in frontend/public"
+            else "Không tìm thấy file xác minh URL TikTok trong frontend/public"
         ),
     )
     add(
         "portal_url_verification",
-        "Developer Portal URL-property verification",
+        "Xác minh URL/property trong Developer Portal",
         "MANUAL",
-        "Confirm Website, Terms, Privacy, and Content Posting URL properties are verified in the portal.",
+        "Xác nhận Website, Terms, Privacy và URL/property của Content Posting đã được xác minh trong Developer Portal.",
     )
     add(
         "sandbox_demo",
-        "First-review Sandbox environment",
+        "Môi trường Sandbox cho lần review đầu",
         "PASS" if settings.tiktok_environment.lower() == "sandbox" else "WARN",
         f"TIKTOK_ENVIRONMENT={settings.tiktok_environment}",
     )
     add(
         "scope_demo_coverage",
-        "Every requested scope has live Sandbox evidence",
+        "Mọi scope xin duyệt đều có bằng chứng Sandbox thật",
         "PASS" if all(item["status"] == "PASS" for item in scope_items) else "FAIL",
         (
-            "All six personal scopes have a connected account with live evidence."
+            "Cả 6 scope tài khoản cá nhân đều có tài khoản đã kết nối và bằng chứng thật."
             if all(item["status"] == "PASS" for item in scope_items)
-            else "Do not request scopes that cannot yet be demonstrated end-to-end."
+            else "Không xin scope chưa thể demo end-to-end."
         ),
     )
     add(
         "webhook_test",
-        "TikTok Developer Portal webhook Test URL evidence",
+        "Bằng chứng Webhook Test URL từ TikTok Developer Portal",
         "PASS" if webhook_events > 0 else "FAIL",
-        f"{webhook_events} persisted webhook event(s)",
+        f"{webhook_events} sự kiện Webhook đã lưu",
     )
     add(
         "demo_video",
-        "App Review demo video evidence",
+        "Bằng chứng video demo App Review",
         "PASS" if demo_files else "FAIL",
         (
-            f"{len(demo_files)} local demo video file(s) found"
+            f"Tìm thấy {len(demo_files)} file video demo cục bộ"
             if demo_files
-            else "No MP4/MOV review demo evidence is stored locally"
+            else "Chưa lưu bằng chứng video review MP4/MOV cục bộ"
         ),
     )
     add(
         "direct_post_audit",
-        "Direct Post unaudited-client restriction acknowledged",
+        "Xác nhận giới hạn Direct Post của client chưa audit",
         "MANUAL",
         (
-            "Until Content Posting audit approval, Direct Post must be demonstrated under "
-            "TikTok's unaudited-client restrictions, including SELF_ONLY visibility."
+            "Trước khi được duyệt audit Content Posting, Direct Post phải được demo theo giới hạn client chưa audit của TikTok, bao gồm quyền xem SELF_ONLY."
         ),
     )
 
@@ -244,11 +241,11 @@ def build_review_package(
         "scope_matrix": scope_items,
         "checks": checks,
         "demo_video_plan": [
-            "Video 1 — Public website → Admin → Login Kit OAuth → basic/extended profile → stats.",
-            "Video 2 — Video Library → video.list sync → stored video metrics → Analytics.",
-            "Video 3 — Draft Upload Studio → video.upload → SEND_TO_USER_INBOX → webhook evidence.",
-            "Video 4 — Direct Post Studio → Creator Info → SELF_ONLY post → status/webhook completion.",
-            "Video 5 — Operations Control Center → disconnect/revoke → production/readiness evidence.",
+            "Video 1 — Website công khai → Quản trị → Login Kit OAuth → hồ sơ cơ bản/mở rộng → thống kê.",
+            "Video 2 — Thư viện video → đồng bộ video.list → chỉ số video đã lưu → Phân tích.",
+            "Video 3 — Tải bản nháp → video.upload → SEND_TO_USER_INBOX → bằng chứng Webhook.",
+            "Video 4 — Đăng trực tiếp → Creator Info → bài SELF_ONLY → trạng thái/Webhook hoàn tất.",
+            "Video 5 — Trung tâm điều hành → ngắt kết nối/thu hồi → bằng chứng production/readiness.",
         ],
         "website_url": origin + "/" if origin else "",
         "terms_url": origin + "/terms" if origin else "",

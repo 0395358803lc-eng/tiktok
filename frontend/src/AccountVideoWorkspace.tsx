@@ -256,7 +256,7 @@ function VideoEmbed({ video }: { video: TikTokVideo }) {
         </>
       ) : (
         <div className="empty-state">
-          <strong>Video này chưa có embed link.</strong>
+          <strong>Video này chưa có liên kết nhúng.</strong>
           <span>Làm mới metadata hoặc chọn video khác.</span>
         </div>
       )}

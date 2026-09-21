@@ -1,7 +1,7 @@
 import { useEffect, useMemo, useState } from "react";
 
 import { api, PublishJob, PublishSchedule, TikTokAccount } from "./api";
-import { jobStatusVi } from "./vi";
+import { jobStatusVi, mediaTypeVi } from "./vi";
 
 type Props = {
   accounts: TikTokAccount[];
@@ -174,7 +174,7 @@ export default function SchedulerPanel({ accounts }: Props) {
               <article className="scheduler-row" key={job.id}>
                 <div className="scheduler-row-main">
                   <strong>
-                    #{job.id} · {job.media_type} ·{" "}
+                    #{job.id} · {mediaTypeVi(job.media_type)} ·{" "}
                     {account?.display_name || account?.username || "Tài khoản #" + job.account_id}
                   </strong>
                   <span>
