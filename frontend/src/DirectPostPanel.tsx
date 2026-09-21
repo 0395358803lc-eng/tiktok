@@ -8,7 +8,7 @@ import {
   TikTokAccount,
 } from "./api";
 import { readVideoDuration } from "./media";
-import { jobStatusVi, mediaTypeVi } from "./vi";
+import { jobStatusVi } from "./vi";
 
 type Props = {
   accounts: TikTokAccount[];
