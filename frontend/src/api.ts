@@ -294,7 +294,7 @@ export type ReviewCheck = {
 };
 
 export type ReviewPackageReport = {
-  status: "READY_FOR_REVIEW" | "NOT_READY_FOR_REVIEW";
+  status: "READY_FOR_REVIEW" | "READY_FOR_MANUAL_VERIFICATION" | "NOT_READY_FOR_REVIEW";
   products: string[];
   scope_matrix: ScopeReviewItem[];
   checks: ReviewCheck[];
