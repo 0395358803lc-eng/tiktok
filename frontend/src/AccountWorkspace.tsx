@@ -264,6 +264,11 @@ function AccountHeader({
             Kết nối lại
           </button>
         )}
+        {account.status === "CONNECTED" && missingScopes.length > 0 && (
+          <button disabled={busy} onClick={onReconnect}>
+            Cấp thêm quyền ({missingScopes.length})
+          </button>
+        )}
         <button className="ghost" disabled={busy} onClick={() => onSyncProfile(account.id)}>
           Đồng bộ dữ liệu
         </button>
