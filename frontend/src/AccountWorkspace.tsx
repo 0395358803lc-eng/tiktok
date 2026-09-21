@@ -388,7 +388,7 @@ function PostingSettingIntro({ section }: { section: AccountSection }) {
     "direct-video": {
       title: "Đăng video trực tiếp",
       description:
-        "Đăng video lên tài khoản đang chọn bằng Direct Post. Creator Info được kiểm tra lại trước khi gửi.",
+        "Đăng video lên tài khoản đang chọn bằng đăng trực tiếp (Direct Post). Thông tin nhà sáng tạo (Creator Info) được kiểm tra lại trước khi gửi.",
       api: "video.publish",
     },
     "photo-post": {
@@ -406,7 +406,7 @@ function PostingSettingIntro({ section }: { section: AccountSection }) {
     privacy: {
       title: "Quyền xem",
       description:
-        "Chỉ hiển thị các lựa chọn quyền xem mà Creator Info hiện tại của TikTok trả về.",
+        "Chỉ hiển thị các lựa chọn quyền xem mà thông tin nhà sáng tạo (Creator Info) hiện tại của TikTok trả về.",
       api: "Content Posting API",
     },
     comment: {

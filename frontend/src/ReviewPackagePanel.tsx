@@ -68,7 +68,7 @@ export default function ReviewPackagePanel() {
             <ReviewUrl label="Điều khoản" value={report.terms_url} onCopy={copy} />
             <ReviewUrl label="Quyền riêng tư" value={report.privacy_url} onCopy={copy} />
             <ReviewUrl label="URL chuyển hướng OAuth" value={report.oauth_redirect_url} onCopy={copy} />
-            <ReviewUrl label="Webhook" value={report.webhook_url} onCopy={copy} />
+            <ReviewUrl label="URL sự kiện gửi về (Webhook)" value={report.webhook_url} onCopy={copy} />
           </div>
 
           <div className="review-products">
@@ -91,7 +91,7 @@ export default function ReviewPackagePanel() {
             <table className="review-table">
               <thead>
                 <tr>
-                  <th>Scope</th>
+                  <th>Quyền (scope)</th>
                   <th>Sản phẩm</th>
                   <th>Tính năng</th>
                   <th>Code</th>

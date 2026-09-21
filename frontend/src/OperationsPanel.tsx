@@ -107,7 +107,7 @@ export default function OperationsPanel({ accounts, onChanged }: Props) {
           <OpsMetric label="Đang chạy" value={summary?.running_posts ?? 0} />
           <OpsMetric label="Bài đăng lỗi" value={summary?.failed_posts ?? 0} />
           <OpsMetric
-            label="Lỗi Webhook"
+            label="Lỗi sự kiện gửi về (Webhook)"
             value={summary?.error_webhooks ?? 0}
           />
         </div>
@@ -263,7 +263,7 @@ export default function OperationsPanel({ accounts, onChanged }: Props) {
         <div className="section-head">
           <div>
             <span className="eyebrow">CỔNG KIỂM TRA PRODUCTION</span>
-            <h3>Mức sẵn sàng Production</h3>
+            <h3>Mức sẵn sàng môi trường chính thức</h3>
           </div>
           <span
             className={

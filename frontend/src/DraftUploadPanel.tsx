@@ -103,7 +103,7 @@ export default function DraftUploadPanel({ accounts }: Props) {
     try {
       const job = await api.createVideoDraft(selected.id, selectedAsset);
       await loadJobs(selected.id);
-      setNotice("Tác vụ bản nháp #" + job.id + " đã vào hàng đợi. DraftWorker sẽ gửi sang TikTok.");
+      setNotice("Tác vụ bản nháp #" + job.id + " đã vào hàng đợi. Tiến trình bản nháp sẽ gửi sang TikTok.");
     } catch (err) {
       setError(err instanceof Error ? err.message : "Không thể đưa video vào hàng đợi bản nháp");
     } finally {

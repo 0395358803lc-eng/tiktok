@@ -26,7 +26,7 @@ export default function WebhookPanel() {
       setEvents(await api.webhookEvents(100));
       setError("");
     } catch (err) {
-      setError(err instanceof Error ? err.message : "Không thể tải sự kiện Webhook");
+      setError(err instanceof Error ? err.message : "Không thể tải sự kiện gửi về từ TikTok");
     } finally {
       setBusy(false);
     }
@@ -35,7 +35,7 @@ export default function WebhookPanel() {
   async function copyCallback() {
     try {
       await navigator.clipboard.writeText(callbackUrl);
-      setNotice("Đã sao chép URL callback Webhook.");
+      setNotice("Đã sao chép URL nhận sự kiện từ TikTok.");
     } catch {
       setNotice("Sao chép thất bại. Hãy chọn URL callback và sao chép thủ công.");
     }
@@ -88,7 +88,7 @@ export default function WebhookPanel() {
 
       {events.length === 0 ? (
         <div className="empty-state">
-          <strong>Chưa nhận được Webhook TikTok nào.</strong>
+          <strong>Chưa nhận được sự kiện gửi về nào từ TikTok.</strong>
           <span>
             Use TikTok Developer Portal's Test URL after configuring the callback.
           </span>

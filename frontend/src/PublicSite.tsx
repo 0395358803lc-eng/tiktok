@@ -103,7 +103,7 @@ export function PublicHome() {
           <article>
             <h3>Đăng trực tiếp và lên lịch</h3>
             <p>
-              Chuẩn bị metadata Direct Post, tuân theo Creator Info hiện tại và vận hành
+              Chuẩn bị dữ liệu đăng trực tiếp (Direct Post), tuân theo thông tin nhà sáng tạo (Creator Info) hiện tại và vận hành
               hàng đợi đăng bài theo Content Posting API.
             </p>
           </article>
@@ -164,7 +164,7 @@ export function TermsPage() {
         <p>
           TH TikTok Manager cung cấp công cụ để người dùng kết nối các tài khoản TikTok mà
           họ được phép quản lý, đồng bộ dữ liệu hồ sơ và phân tích được cấp quyền, quản lý
-          thông tin video công khai, chuẩn bị bản nháp, Direct Post, lịch đăng, duy trì kết
+          thông tin video công khai, chuẩn bị bản nháp, đăng trực tiếp (Direct Post), lịch đăng, duy trì kết
           nối OAuth và thu hồi kết nối. Mỗi tính năng phụ thuộc vào sản phẩm và scope TikTok
           đã cấp cho ứng dụng và được người dùng cho phép.
         </p>
@@ -252,7 +252,7 @@ export function PrivacyPage() {
         <p>
           Thông tin được dùng để duy trì kết nối được ủy quyền, hiển thị hồ sơ/thống kê được
           phép, đồng bộ video công khai, xây dựng phân tích lịch sử, thực hiện luồng bản nháp
-          hoặc Direct Post do người dùng yêu cầu, vận hành lịch đăng, xử lý webhook TikTok,
+          hoặc đăng trực tiếp (Direct Post) do người dùng yêu cầu, vận hành lịch đăng, xử lý sự kiện gửi về (Webhook) từ TikTok,
           làm mới quyền truy cập, hỗ trợ ngắt kết nối/thu hồi, chẩn đoán hệ thống và duy trì
           nhật ký bảo mật.
         </p>

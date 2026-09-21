@@ -406,7 +406,7 @@ export default function DirectPostPanel({ accounts, initialMode = "VIDEO" }: Pro
         <div className="setup-box">
           <strong>Cần quyền video.publish</strong>
           <p>
-            Bật Direct Post trong Content Posting API, xin quyền <code>video.publish</code>, sau đó kết nối lại tài khoản để cấp quyền mới.
+            Bật tính năng đăng trực tiếp (Direct Post) trong Content Posting API, xin quyền <code>video.publish</code>, sau đó kết nối lại tài khoản để cấp quyền mới.
           </p>
         </div>
       ) : null}
@@ -421,10 +421,10 @@ export default function DirectPostPanel({ accounts, initialMode = "VIDEO" }: Pro
                 <div className="creator-placeholder">TT</div>
               )}
               <div>
-                <strong>{creator?.creator_nickname || "Chưa tải Creator Info"}</strong>
+                <strong>{creator?.creator_nickname || "Chưa tải thông tin nhà sáng tạo"}</strong>
                 {creator?.creator_username && <span>@{creator.creator_username}</span>}
                 <span>
-                  Video tối đa: {creator?.max_video_post_duration_sec ?? "—"} seconds
+                  Video tối đa: {creator?.max_video_post_duration_sec ?? "—"} giây
                 </span>
               </div>
             </div>
@@ -433,12 +433,12 @@ export default function DirectPostPanel({ accounts, initialMode = "VIDEO" }: Pro
               disabled={creatorBusy || selectedId === null}
               onClick={() => selectedId !== null && loadCreator(selectedId)}
             >
-              {creatorBusy ? "Đang tải…" : "Làm mới Creator Info"}
+              {creatorBusy ? "Đang tải…" : "Làm mới thông tin nhà sáng tạo"}
             </button>
           </div>
 
           <p className="direct-post-warning">
-            TikTok yêu cầu Creator Info mới nhất cho mỗi lần đăng trực tiếp. Ứng dụng chưa được audit phải tuân theo giới hạn quyền xem riêng tư của TikTok cho tới khi hoàn tất audit.
+            TikTok yêu cầu thông tin nhà sáng tạo (Creator Info) mới nhất cho mỗi lần đăng trực tiếp. Ứng dụng chưa được audit phải tuân theo giới hạn quyền xem riêng tư của TikTok cho tới khi hoàn tất audit.
           </p>
 
           {error && <div className="error global-error">{error}</div>}
@@ -754,7 +754,7 @@ export default function DirectPostPanel({ accounts, initialMode = "VIDEO" }: Pro
           <div className="draft-jobs-head">
             <div>
               <strong>Tác vụ đăng trực tiếp</strong>
-              <span>PublishWorker tự động kiểm tra trạng thái.</span>
+              <span>Tiến trình đăng bài tự động kiểm tra trạng thái.</span>
             </div>
             <button
               className="ghost"
