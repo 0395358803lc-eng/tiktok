@@ -1,10 +1,14 @@
-# TH TikTok Manager
+# TH Creator Manager
 
 API-first TikTok account management platform.
 
 ## Current milestone
 
-Batch A — Foundation is implemented without Docker. Services run directly on the server as native/user-space processes.
+Batch O implementation is present in the repository. The application now includes OAuth/token lifecycle management, profile/video synchronization, analytics, draft upload, Direct Post, webhooks, publishing scheduler, operations monitoring, and a production-review package.
+
+The remaining milestone is external TikTok Developer Portal enablement plus real Sandbox E2E evidence for every advanced scope intended for review. Code implementation alone is not treated as live acceptance.
+
+Services run directly on the server as native/user-space processes without Docker.
 
 ### Runtime ports
 - Frontend: `15173`
@@ -54,7 +58,7 @@ cd backend
 
 ## Frontend
 
-The React/TypeScript frontend provides the Batch A admin login and infrastructure status screen.
+The React/TypeScript frontend provides the public TH Creator Manager site and the protected Vietnamese admin control plane for connected accounts, publishing, analytics, operations, and review readiness.
 
 Run quality checks:
 
@@ -91,7 +95,7 @@ These are excluded from source control as appropriate.
 
 ## Next milestone
 
-Batch B will add TikTok Login Kit/OAuth, state validation, account connection and token lifecycle management only after Batch A acceptance remains green.
+Enable only the intended TikTok scopes in Developer Portal, mirror that exact set in `TIKTOK_SCOPES`, reconnect the Sandbox account, and run the real-scope E2E matrix until every scope selected for review has live evidence. Do not add scopes to runtime configuration before they are actually enabled in the TikTok app.
 
 
 ## Batch B — TikTok OAuth
@@ -344,5 +348,4 @@ Review documents:
 - `docs/TIKTOK_REVIEW_DEMO_VIDEO_SCRIPT_2026-09-21.md`
 - `docs/BATCH_O_PRODUCTION_REVIEW_PACKAGE_2026-09-21.md`
 
-The current public name still contains the TikTok brand and is intentionally reported as a
-review blocker instead of being silently renamed.
+The public website now uses the review-safe product name `TH Creator Manager`. The TikTok Developer Portal app name must be manually kept aligned with that public name before submission.

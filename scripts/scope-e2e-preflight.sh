@@ -2,7 +2,6 @@
 set -euo pipefail
 
 ROOT="$(cd "$(dirname "${BASH_SOURCE[0]}")/.." && pwd)"
-export TIKTOK_SCOPES="user.info.basic,user.info.profile,user.info.stats,video.list,video.upload,video.publish"
 cd "$ROOT/backend"
 
 "$ROOT/.venv/bin/python" - <<'PY'
@@ -15,7 +14,7 @@ from app.services.tiktok.scopes import (
 
 settings = get_settings()
 configured = configured_personal_scopes(settings)
-print("TikTok scope preflight")
+print("TikTok scope preflight (effective server configuration)")
 print("environment:", settings.tiktok_environment)
 print("configured:", ",".join(configured) or "(none)")
 print()

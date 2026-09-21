@@ -1,7 +1,7 @@
 # TikTok Production Review Package
 
 **Date:** 2026-09-21  
-**Project:** TH TikTok Manager  
+**Project:** TH Creator Manager  
 **Review status:** NOT READY FOR REVIEW
 
 ## Important submission rule
@@ -27,21 +27,13 @@ Use this only if it accurately describes the service available to users:
 
 Do not describe the application as a private/personal-only utility. TikTok's current review criteria state that apps for private or personal use will not be approved.
 
-## App-name blocker
+## App-name alignment
 
-The current public name is:
+The current public website name is:
 
-`TH TikTok Manager`
+`TH Creator Manager`
 
-TikTok's current App Review Guidelines state that an app name should not include a reference to social media companies.
-
-Before review:
-
-1. choose a review-safe product name that does not contain the TikTok brand;
-2. update Developer Portal app name;
-3. update public website/header/footer;
-4. update Terms/Privacy references if the public product name changes;
-5. ensure the demo video shows the same product name.
+The public branding no longer uses TikTok as the product name. Before review, manually confirm that the TikTok Developer Portal app name is also `TH Creator Manager` and that the review video, Website, Terms, and Privacy pages show the same public product name.
 
 The repository/folder name does not need to change.
 
@@ -201,7 +193,7 @@ Do not submit a video for a scope that is not enabled and cannot be demonstrated
 
 ## Current blockers before review submission
 
-- Public app name contains the TikTok brand.
+- Confirm the TikTok Developer Portal app name matches the public name `TH Creator Manager`.
 - Confirm the product is not positioned as private/personal-only use.
 - Advanced scopes are not configured/granted in the current Sandbox account.
 - Developer Portal URL-property verification must be confirmed.

@@ -2,7 +2,6 @@
 set -euo pipefail
 ROOT="$(cd "$(dirname "$0")/.." && pwd)"
 RUNTIME="$ROOT/.runtime"
-export TIKTOK_SCOPES="user.info.basic,user.info.profile,user.info.stats,video.list,video.upload,video.publish"
 mkdir -p "$ROOT/logs" "$ROOT/runtime/valkey"
 
 if ! "$RUNTIME/bin/pg_isready" -h 127.0.0.1 -p 15432 >/dev/null 2>&1; then
