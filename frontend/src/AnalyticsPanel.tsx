@@ -39,7 +39,7 @@ export default function AnalyticsPanel({ accounts }: Props) {
     try {
       setReport(await api.tiktokAnalytics(accountId, range));
     } catch (err) {
-      setError(err instanceof Error ? err.message : "Unable to load analytics");
+      setError(err instanceof Error ? err.message : "Không thể tải dữ liệu phân tích");
       setReport(null);
     } finally {
       setLoading(false);
@@ -60,10 +60,10 @@ export default function AnalyticsPanel({ accounts }: Props) {
     <section className="panel analytics-panel">
       <div className="section-head">
         <div>
-          <span className="eyebrow">ANALYTICS ENGINE</span>
-          <h3>Account & video performance</h3>
+          <span className="eyebrow">PHÂN TÍCH DỮ LIỆU</span>
+          <h3>Hiệu suất tài khoản & video</h3>
         </div>
-        {accounts.length > 0 && (
+        {accounts.length > 1 && (
           <select
             className="video-account-select"
             value={selectedId ?? ""}
@@ -71,7 +71,7 @@ export default function AnalyticsPanel({ accounts }: Props) {
           >
             {accounts.map((account) => (
               <option value={account.id} key={account.id}>
-                {account.display_name || account.username || "Account #" + account.id}
+                {account.display_name || account.username || "Tài khoản #" + account.id}
               </option>
             ))}
           </select>
@@ -95,7 +95,7 @@ export default function AnalyticsPanel({ accounts }: Props) {
           disabled={loading || selectedId === null}
           onClick={() => selectedId !== null && loadReport(selectedId, days)}
         >
-          {loading ? "Loading…" : "Refresh report"}
+          {loading ? "Đang tải…" : "Làm mới báo cáo"}
         </button>
       </div>
 
@@ -103,7 +103,7 @@ export default function AnalyticsPanel({ accounts }: Props) {
 
       {!canCollectAccountStats && !canCollectVideoStats && selected && (
         <div className="setup-box">
-          <strong>Historical analytics needs additional TikTok permissions</strong>
+          <strong>Phân tích lịch sử cần thêm quyền TikTok</strong>
           <p>
             Enable <code>user.info.stats</code> for account growth and <code>video.list</code>
             for video performance. This panel never fabricates missing historical data.
@@ -112,25 +112,25 @@ export default function AnalyticsPanel({ accounts }: Props) {
       )}
 
       <div className="analytics-summary">
-        <DeltaCard label="Followers" value={report?.account_deltas.followers} />
-        <DeltaCard label="Following" value={report?.account_deltas.following} />
-        <DeltaCard label="Likes" value={report?.account_deltas.likes} />
-        <DeltaCard label="Videos" value={report?.account_deltas.videos} />
+        <DeltaCard label="Follower" value={report?.account_deltas.followers} />
+        <DeltaCard label="Đang theo dõi" value={report?.account_deltas.following} />
+        <DeltaCard label="Tổng lượt thích" value={report?.account_deltas.likes} />
+        <DeltaCard label="Số video" value={report?.account_deltas.videos} />
       </div>
 
       <div className="analytics-grid">
         <article className="analytics-chart-card">
           <div className="analytics-card-head">
             <div>
-              <strong>Follower history</strong>
-              <span>{report?.account_snapshot_count ?? 0} real snapshots</span>
+              <strong>Lịch sử follower</strong>
+              <span>{report?.account_snapshot_count ?? 0} snapshot thật</span>
             </div>
           </div>
           {followerPoints.length < 2 ? (
             <div className="analytics-empty">
-              <strong>Not enough historical data yet.</strong>
+              <strong>Chưa đủ dữ liệu lịch sử.</strong>
               <span>
-                At least two real snapshots are required before a growth line can be drawn.
+                At least two snapshot thật are required before a growth line can be drawn.
               </span>
             </div>
           ) : (
@@ -141,14 +141,14 @@ export default function AnalyticsPanel({ accounts }: Props) {
         <article className="analytics-chart-card">
           <div className="analytics-card-head">
             <div>
-              <strong>Top video growth</strong>
-              <span>{report?.video_snapshot_count ?? 0} real metric snapshots</span>
+              <strong>Tăng trưởng video nổi bật</strong>
+              <span>{report?.video_snapshot_count ?? 0} snapshot chỉ số thật</span>
             </div>
           </div>
           {!report || report.top_videos.length === 0 ? (
             <div className="analytics-empty">
-              <strong>No tracked video growth yet.</strong>
-              <span>Video metrics appear after at least two synchronized observations.</span>
+              <strong>Chưa có dữ liệu tăng trưởng video.</strong>
+              <span>Chỉ số video xuất hiện sau ít nhất hai lần đồng bộ thực tế.</span>
             </div>
           ) : (
             <div className="top-video-list">
@@ -162,11 +162,11 @@ export default function AnalyticsPanel({ accounts }: Props) {
                   <div>
                     <strong>{video.title || "TikTok video"}</strong>
                     <span>
-                      {formatMetric(video.view_count)} views · {formatDelta(video.view_delta)}
+                      {formatMetric(video.view_count)} lượt xem · {formatDelta(video.view_delta)}
                     </span>
                   </div>
                   {video.share_url && (
-                    <a href={video.share_url} target="_blank" rel="noreferrer">Open</a>
+                    <a href={video.share_url} target="_blank" rel="noreferrer">Mở</a>
                   )}
                 </div>
               ))}
@@ -210,7 +210,7 @@ function MiniLineChart({ points }: { points: { value: number; label: string }[] 
 
   return (
     <div className="mini-chart">
-      <svg viewBox="0 0 100 100" preserveAspectRatio="none" aria-label="Follower growth chart">
+      <svg viewBox="0 0 100 100" preserveAspectRatio="none" aria-label="Biểu đồ tăng trưởng follower">
         <polyline points={coords} fill="none" vectorEffect="non-scaling-stroke" />
       </svg>
       <div className="mini-chart-legend">
