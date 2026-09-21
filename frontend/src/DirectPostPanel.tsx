@@ -438,7 +438,9 @@ export default function DirectPostPanel({ accounts, initialMode = "VIDEO" }: Pro
           </div>
 
           <p className="direct-post-warning">
-            TikTok yêu cầu thông tin nhà sáng tạo (Creator Info) mới nhất cho mỗi lần đăng trực tiếp. Ứng dụng chưa được audit phải tuân theo giới hạn quyền xem riêng tư của TikTok cho tới khi hoàn tất audit.
+            TikTok yêu cầu Creator Info mới nhất cho mỗi lần đăng trực tiếp. Khi ứng dụng chưa được audit,
+            Direct Post chỉ được dùng với quyền xem SELF_ONLY và tài khoản TikTok đích phải đang ở chế độ
+            Riêng tư (Private). Nếu tài khoản đang công khai, TikTok sẽ chặn yêu cầu trước khi tạo publish_id.
           </p>
 
           {error && <div className="error global-error">{error}</div>}

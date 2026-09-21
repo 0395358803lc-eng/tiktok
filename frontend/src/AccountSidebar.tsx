@@ -41,7 +41,7 @@ export default function AccountSidebar({
       <div className="sidebar-brand">
         <div className="mark">TH</div>
         <div>
-          <strong>TH TikTok Manager</strong>
+          <strong>TH Creator Manager</strong>
           <span>Quản lý tài khoản qua API chính thức</span>
         </div>
       </div>

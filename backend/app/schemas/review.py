@@ -10,6 +10,8 @@ class ScopeReviewItem(BaseModel):
     configured: bool
     connected_accounts_with_scope: int
     code_implemented: bool
+    live_evidence: bool
+    evidence_detail: str
     evidence_routes: list[str]
     status: Literal["PASS", "BLOCKED", "NOT_CONFIGURED"]
 

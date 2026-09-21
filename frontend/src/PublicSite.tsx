@@ -6,7 +6,7 @@ function SiteHeader() {
       <a className="public-brand" href="/">
         <span className="mark">TH</span>
         <span>
-          <strong>TH TikTok Manager</strong>
+          <strong>TH Creator Manager</strong>
           <small>Quản lý tài khoản được ủy quyền</small>
         </span>
       </a>
@@ -25,7 +25,7 @@ function SiteFooter() {
   return (
     <footer className="public-footer">
       <div>
-        <strong>TH TikTok Manager</strong>
+        <strong>TH Creator Manager</strong>
         <span>Kết nối tài khoản sử dụng luồng OAuth chính thức của TikTok.</span>
       </div>
       <div className="footer-links">
@@ -47,7 +47,7 @@ export function PublicHome() {
           <span className="eyebrow">QUẢN LÝ TÀI KHOẢN ĐƯỢC ỦY QUYỀN</span>
           <h1>Kết nối và quản lý tài khoản TikTok qua OAuth chính thức.</h1>
           <p>
-            TH TikTok Manager giúp người dùng được ủy quyền kết nối tài khoản, đồng bộ
+            TH Creator Manager giúp người dùng được ủy quyền kết nối tài khoản, đồng bộ
             dữ liệu được phép, quản lý video và các luồng đăng nội dung từ một giao diện
             quản trị tập trung.
           </p>
@@ -162,7 +162,7 @@ export function TermsPage() {
 
         <h2>1. Dịch vụ</h2>
         <p>
-          TH TikTok Manager cung cấp công cụ để người dùng kết nối các tài khoản TikTok mà
+          TH Creator Manager cung cấp công cụ để người dùng kết nối các tài khoản TikTok mà
           họ được phép quản lý, đồng bộ dữ liệu hồ sơ và phân tích được cấp quyền, quản lý
           thông tin video công khai, chuẩn bị bản nháp, đăng trực tiếp (Direct Post), lịch đăng, duy trì kết
           nối OAuth và thu hồi kết nối. Mỗi tính năng phụ thuộc vào sản phẩm và scope TikTok

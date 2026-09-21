@@ -97,7 +97,7 @@ export default function ReviewPackagePanel() {
                   <th>Code</th>
                   <th>Đã cấu hình</th>
                   <th>Tài khoản đã cấp</th>
-                  <th>Bằng chứng</th>
+                  <th>Bằng chứng live</th>
                 </tr>
               </thead>
               <tbody>
@@ -126,6 +126,7 @@ export default function ReviewPackagePanel() {
                       >
                         {checkStatusVi(item.status)}
                       </span>
+                      <span>{item.evidence_detail}</span>
                       <details>
                         <summary>{item.evidence_routes.length} endpoint</summary>
                         <div className="review-routes">

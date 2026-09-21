@@ -183,7 +183,7 @@ export default function App() {
       <header className="brand">
         <div className="mark">TH</div>
         <div>
-          <h1>TH TikTok Manager</h1>
+          <h1>TH Creator Manager</h1>
           <p>Multi-account API control plane</p>
         </div>
       </header>

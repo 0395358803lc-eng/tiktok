@@ -5,6 +5,8 @@ from sqlalchemy import func, select
 from sqlalchemy.orm import Session
 
 from app.core.settings import ROOT_DIR, Settings
+from app.models.analytics import AccountStatSnapshot
+from app.models.audit_event import AuditEvent
 from app.models.tiktok_account import TikTokAccount
 from app.models.tiktok_webhook_event import TikTokWebhookEvent
 from app.services.tiktok.scopes import configured_personal_scopes, normalize_scopes
@@ -79,6 +81,61 @@ def _public_site_text() -> str:
     return path.read_text(errors="ignore") if path.exists() else ""
 
 
+def _live_scope_evidence(
+    db: Session,
+    scope: str,
+    accounts: list[TikTokAccount],
+) -> tuple[bool, str]:
+    granted = [
+        account
+        for account in accounts
+        if account.status == "CONNECTED" and scope in normalize_scopes(account.scopes)
+    ]
+    if not granted:
+        return False, "Chưa có tài khoản kết nối cấp quyền này."
+
+    account_ids = [account.id for account in granted]
+
+    if scope in {"user.info.basic", "user.info.profile"}:
+        count = sum(account.profile_synced_at is not None for account in granted)
+        return (
+            count > 0,
+            f"{count} tài khoản đã đồng bộ hồ sơ thành công từ TikTok.",
+        )
+
+    if scope == "user.info.stats":
+        count = db.scalar(
+            select(func.count())
+            .select_from(AccountStatSnapshot)
+            .where(AccountStatSnapshot.account_id.in_(account_ids))
+        ) or 0
+        return count > 0, f"{count} snapshot thống kê tài khoản đã lưu."
+
+    event_types = {
+        "video.list": ("VIDEOS_SYNCED", "VIDEOS_REFRESHED"),
+        "video.upload": (
+            "DRAFT_SUBMITTED",
+            "DRAFT_INBOX_DELIVERED",
+            "DRAFT_PUBLISH_COMPLETE",
+        ),
+        "video.publish": ("DIRECT_POST_SUBMITTED", "DIRECT_POST_COMPLETE"),
+    }.get(scope)
+
+    if event_types:
+        count = db.scalar(
+            select(func.count())
+            .select_from(AuditEvent)
+            .where(
+                AuditEvent.account_id.in_(account_ids),
+                AuditEvent.event_type.in_(event_types),
+                AuditEvent.status != "ERROR",
+            )
+        ) or 0
+        return count > 0, f"{count} sự kiện API live thành công đã lưu."
+
+    return False, "Chưa định nghĩa bằng chứng live cho scope này."
+
+
 def build_review_package(
     db: Session,
     settings: Settings,
@@ -100,7 +157,13 @@ def build_review_package(
         routes = list(spec["routes"])
         code_implemented = all(_route_exists(app, route) for route in routes)
         is_configured = scope in configured
-        if code_implemented and is_configured and granted_count > 0:
+        live_evidence, evidence_detail = _live_scope_evidence(db, scope, accounts)
+        if (
+            code_implemented
+            and is_configured
+            and granted_count > 0
+            and live_evidence
+        ):
             item_status = "PASS"
         elif not is_configured:
             item_status = "NOT_CONFIGURED"
@@ -114,6 +177,8 @@ def build_review_package(
                 "configured": is_configured,
                 "connected_accounts_with_scope": granted_count,
                 "code_implemented": code_implemented,
+                "live_evidence": live_evidence,
+                "evidence_detail": evidence_detail,
                 "evidence_routes": routes,
                 "status": item_status,
             }
@@ -131,7 +196,10 @@ def build_review_package(
     ) or 0
 
     demo_files: list[Path] = []
-    for root in (ROOT_DIR / "docs", ROOT_DIR / "runtime"):
+    for root in (
+        ROOT_DIR / "docs" / "review-evidence",
+        ROOT_DIR / "runtime" / "review-evidence",
+    ):
         if root.exists():
             demo_files.extend(root.rglob("*.mp4"))
             demo_files.extend(root.rglob("*.mov"))
@@ -155,13 +223,19 @@ def build_review_package(
     )
     add(
         "app_name",
-        "Tên ứng dụng phù hợp để review",
+        "Tên hiển thị website phù hợp để review",
         "FAIL" if brand_contains_tiktok else "PASS",
         (
-            "Tên public hiện chứa từ 'TikTok'; hướng dẫn App Review của TikTok nêu rằng tên ứng dụng không nên tham chiếu tên công ty mạng xã hội."
+            "Tên public hiện chứa từ 'TikTok'; hướng dẫn App Review nêu rằng tên ứng dụng không nên tham chiếu tên công ty mạng xã hội."
             if brand_contains_tiktok
-            else "Tên public không chứa tham chiếu thương hiệu TikTok."
+            else "Tên hiển thị website hiện là TH Creator Manager và không dùng TikTok trong tên thương hiệu."
         ),
+    )
+    add(
+        "portal_app_name",
+        "Tên ứng dụng trong TikTok Developer Portal",
+        "MANUAL",
+        "Đổi App name trong Developer Portal thành cùng tên public TH Creator Manager trước khi nộp review.",
     )
     add(
         "public_use_case",
@@ -204,10 +278,24 @@ def build_review_package(
         ),
     )
     add(
+        "webhook_endpoint_security",
+        "Webhook endpoint HTTPS và xác minh chữ ký",
+        (
+            "PASS"
+            if website_is_https and settings.active_tiktok_client_secret is not None
+            else "FAIL"
+        ),
+        (
+            "Endpoint /api/tiktok/webhooks dùng HTTPS, kiểm tra TikTok-Signature và có chống trùng lặp."
+            if website_is_https and settings.active_tiktok_client_secret is not None
+            else "Webhook HTTPS hoặc client secret chưa sẵn sàng."
+        ),
+    )
+    add(
         "webhook_test",
         "Bằng chứng Webhook Test URL từ TikTok Developer Portal",
         "PASS" if webhook_events > 0 else "FAIL",
-        f"{webhook_events} sự kiện Webhook đã lưu",
+        f"{webhook_events} sự kiện Webhook thật đã lưu; self-test nội bộ không được giữ làm bằng chứng.",
     )
     add(
         "demo_video",

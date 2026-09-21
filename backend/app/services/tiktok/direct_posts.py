@@ -76,7 +76,19 @@ def _payload(response: httpx.Response, context: str) -> dict:
     code = error.get("code")
     if response.is_error or code not in (None, 0, "ok"):
         message = error.get("message") or f"TikTok {context} failed"
-        raise TikTokAPIError(str(message))
+        log_id = error.get("log_id")
+        if code == "unaudited_client_can_only_post_to_private_accounts":
+            message = (
+                "TikTok chặn Direct Post: ứng dụng chưa audit chỉ được đăng ở chế độ "
+                "SELF_ONLY vào tài khoản TikTok đang đặt là Riêng tư (Private). "
+                "Hãy chuyển tài khoản đích sang Private rồi thử lại."
+            )
+        details = [str(message)]
+        if code not in (None, 0, "ok"):
+            details.append(f"code={code}")
+        if log_id:
+            details.append(f"log_id={log_id}")
+        raise TikTokAPIError(" | ".join(details))
     return payload
 
 

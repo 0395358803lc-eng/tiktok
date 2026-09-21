@@ -280,6 +280,8 @@ export type ScopeReviewItem = {
   configured: boolean;
   connected_accounts_with_scope: number;
   code_implemented: boolean;
+  live_evidence: boolean;
+  evidence_detail: string;
   evidence_routes: string[];
   status: "PASS" | "BLOCKED" | "NOT_CONFIGURED";
 };

@@ -35,7 +35,7 @@ export default function AdminLogin({
       <header className="brand">
         <div className="mark">TH</div>
         <div>
-          <h1>TH TikTok Manager</h1>
+          <h1>TH Creator Manager</h1>
           <p>Trung tâm quản lý tài khoản qua API chính thức</p>
         </div>
       </header>

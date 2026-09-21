@@ -1,5 +1,6 @@
 from datetime import UTC, datetime, timedelta
 
+import httpx
 import pytest
 from sqlalchemy import delete
 
@@ -8,11 +9,13 @@ from app.models.media_asset import MediaAsset
 from app.models.tiktok_account import TikTokAccount
 from app.models.tiktok_publish_job import TikTokPublishJob
 from app.services.media_library import media_root
+from app.services.tiktok.client import TikTokAPIError
 from app.services.tiktok.crypto import encrypt_token
 from app.services.tiktok.direct_posts import (
     CreatorInfo,
     DirectPostOptions,
     TikTokPublishValidationError,
+    _payload,
     validate_direct_post,
 )
 from app.services.tiktok.drafts import DraftInitResult, DraftStatusResult
@@ -51,6 +54,29 @@ def _options(**overrides) -> DirectPostOptions:
     }
     values.update(overrides)
     return DirectPostOptions(**values)
+
+
+def test_unaudited_private_account_error_is_actionable():
+    response = httpx.Response(
+        403,
+        json={
+            "data": {},
+            "error": {
+                "code": "unaudited_client_can_only_post_to_private_accounts",
+                "message": "Please review our integration guidelines",
+                "log_id": "test-log-id",
+            },
+        },
+    )
+
+    with pytest.raises(TikTokAPIError) as exc_info:
+        _payload(response, "Direct Post video initialization")
+
+    message = str(exc_info.value)
+    assert "Riêng tư (Private)" in message
+    assert "SELF_ONLY" in message
+    assert "code=unaudited_client_can_only_post_to_private_accounts" in message
+    assert "log_id=test-log-id" in message
 
 
 def _account(db) -> TikTokAccount:
