@@ -63,11 +63,11 @@ export default function ReviewPackagePanel() {
       {report && (
         <>
           <div className="review-url-grid">
-            <ReviewUrl label="Website" value={report.website_url} onSao chép={copy} />
-            <ReviewUrl label="Điều khoản" value={report.terms_url} onSao chép={copy} />
-            <ReviewUrl label="Quyền riêng tư" value={report.privacy_url} onSao chép={copy} />
-            <ReviewUrl label="OAuth redirect" value={report.oauth_redirect_url} onSao chép={copy} />
-            <ReviewUrl label="Webhook" value={report.webhook_url} onSao chép={copy} />
+            <ReviewUrl label="Website" value={report.website_url} onCopy={copy} />
+            <ReviewUrl label="Điều khoản" value={report.terms_url} onCopy={copy} />
+            <ReviewUrl label="Quyền riêng tư" value={report.privacy_url} onCopy={copy} />
+            <ReviewUrl label="OAuth redirect" value={report.oauth_redirect_url} onCopy={copy} />
+            <ReviewUrl label="Webhook" value={report.webhook_url} onCopy={copy} />
           </div>
 
           <div className="review-products">
@@ -126,7 +126,7 @@ export default function ReviewPackagePanel() {
                         {item.status}
                       </span>
                       <details>
-                        <summary>{item.evidence_routes.length} route</summary>
+                        <summary>{item.evidence_routes.length} route(s)</summary>
                         <div className="review-routes">
                           {item.evidence_routes.map((route) => (
                             <code key={route}>{route}</code>
@@ -182,18 +182,18 @@ export default function ReviewPackagePanel() {
 function ReviewUrl({
   label,
   value,
-  onSao chép,
+  onCopy,
 }: {
   label: string;
   value: string;
-  onSao chép: (value: string, label: string) => Promise<void>;
+  onCopy: (value: string, label: string) => Promise<void>;
 }) {
   return (
     <article>
       <span>{label}</span>
       <code>{value || "Chưa cấu hình"}</code>
-      <button className="ghost" disabled={!value} onClick={() => void onSao chép(value, label)}>
-        Sao chép
+      <button className="ghost" disabled={!value} onClick={() => void onCopy(value, label)}>
+        Copy
       </button>
     </article>
   );
