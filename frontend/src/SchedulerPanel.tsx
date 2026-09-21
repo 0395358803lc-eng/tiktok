@@ -11,7 +11,9 @@ type Range = 7 | 30;
 
 export default function SchedulerPanel({ accounts }: Props) {
   const [days, setDays] = useState<Range>(7);
-  const [accountId, setAccountId] = useState<number | undefined>(undefined);
+  const [accountId, setAccountId] = useState<number | undefined>(
+    accounts.length === 1 ? accounts[0]?.id : undefined,
+  );
   const [report, setReport] = useState<PublishSchedule | null>(null);
   const [edits, setEdits] = useState<Record<number, string>>({});
   const [busyId, setBusyId] = useState<number | null>(null);
@@ -22,6 +24,16 @@ export default function SchedulerPanel({ accounts }: Props) {
     () => new Map(accounts.map((account) => [account.id, account])),
     [accounts],
   );
+
+  useEffect(() => {
+    setAccountId((current) => {
+      if (accounts.length === 1) return accounts[0].id;
+      if (current !== undefined && accounts.some((account) => account.id === current)) {
+        return current;
+      }
+      return undefined;
+    });
+  }, [accounts]);
 
   useEffect(() => {
     void loadSchedule();
