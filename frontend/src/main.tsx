@@ -1,7 +1,7 @@
 import { StrictMode } from "react";
 import { createRoot } from "react-dom/client";
 
-import App from "./App";
+import AdminRoot from "./AdminRoot";
 import { PrivacyPage, PublicHome, TermsPage } from "./PublicSite";
 import "./styles.css";
 
@@ -10,7 +10,7 @@ function Route() {
 
   if (path === "/terms") return <TermsPage />;
   if (path === "/privacy") return <PrivacyPage />;
-  if (path === "/admin") return <App />;
+  if (path === "/admin") return <AdminRoot />;
   return <PublicHome />;
 }
 
